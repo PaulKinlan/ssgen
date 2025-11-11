@@ -14,6 +14,9 @@ const DEFAULT_SYSTEM_PROMPT = `You are a helpful assistant that generates web pa
 You should convert the markdown into well-structured HTML with appropriate styling.
 Make the output visually appealing and professional.`;
 
+// Default model
+const DEFAULT_MODEL = "gemini-2.0-flash-exp";
+
 interface RequestContext {
   headers: Record<string, string>;
   method: string;
@@ -52,6 +55,7 @@ async function handler(req: Request): Promise<Response> {
       const markdownContent = requestBody.content || url.searchParams.get("content") || DEFAULT_CONTENT;
       const systemPrompt = requestBody.systemPrompt || url.searchParams.get("systemPrompt") || DEFAULT_SYSTEM_PROMPT;
       const userPrompt = requestBody.prompt || url.searchParams.get("prompt") || "Generate an HTML page from this markdown content.";
+      const modelName = requestBody.model || url.searchParams.get("model") || DEFAULT_MODEL;
 
       // Build request context with headers and other variables
       const requestContext: RequestContext = {
@@ -82,7 +86,7 @@ ${markdownContent}
 Please generate the HTML output.`;
 
       // Initialize Gemini model
-      const model = google("gemini-2.5-flash", {
+      const model = google(modelName, {
         apiKey: Deno.env.get("GOOGLE_GENERATIVE_AI_API_KEY")
       });
 

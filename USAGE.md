@@ -92,7 +92,33 @@ curl -X POST http://localhost:8000/ \
   }'
 ```
 
-### 6. Landing Page Generation
+### 6. Using Different Models
+
+You can specify which model to use via GET query parameter or POST body:
+
+**GET Request with Model Parameter:**
+```bash
+curl "http://localhost:8000/?model=gemini-1.5-pro&content=Hello+World&prompt=Generate+HTML"
+```
+
+**POST Request with Model Parameter:**
+```bash
+curl -X POST http://localhost:8000/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "# Technical Documentation",
+    "model": "gemini-1.5-pro",
+    "prompt": "Create comprehensive technical documentation",
+    "systemPrompt": "You are a technical writing expert."
+  }'
+```
+
+Available models:
+- `gemini-2.0-flash-exp` (default, fastest, latest experimental)
+- `gemini-1.5-pro` (more powerful, better for complex tasks)
+- `gemini-1.5-flash` (fast, good for simple tasks)
+
+### 7. Landing Page Generation
 
 ```bash
 curl -X POST http://localhost:8000/ \
@@ -106,18 +132,31 @@ curl -X POST http://localhost:8000/ \
 
 ## Testing with Different Models
 
-To test with different Gemini models, modify `main.ts`:
+You can now test with different Gemini models without modifying code! Simply pass the `model` parameter:
 
-```typescript
-// Use Gemini 1.5 Pro (more powerful, slower)
-const model = google("gemini-1.5-pro");
+**Using GET:**
+```bash
+# Test with Gemini 1.5 Pro (more powerful, slower)
+curl "http://localhost:8000/?model=gemini-1.5-pro&content=Hello"
 
-// Use Gemini 1.5 Flash (faster, lighter)
-const model = google("gemini-1.5-flash");
+# Test with Gemini 1.5 Flash (faster, lighter)
+curl "http://localhost:8000/?model=gemini-1.5-flash&content=Hello"
 
-// Use Gemini 2.0 Flash Experimental (default, latest)
-const model = google("gemini-2.0-flash-exp");
+# Test with Gemini 2.0 Flash Experimental (default, latest)
+curl "http://localhost:8000/?model=gemini-2.0-flash-exp&content=Hello"
 ```
+
+**Using POST:**
+```bash
+curl -X POST http://localhost:8000/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "# Test Content",
+    "model": "gemini-1.5-pro"
+  }'
+```
+
+To change the default model for all requests, modify the `DEFAULT_MODEL` constant in `main.ts`.
 
 ## Observing the Stream
 
