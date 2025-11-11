@@ -75,8 +75,7 @@ ${markdownContent}
 Please generate the HTML output.`;
 
       // Initialize Gemini model
-      const model = google("gemini-2.5-flash, {
-        // Optional: Add model configuration here
+      const model = google("gemini-2.5-flash", {
         apiKey: Deno.env.get("GOOGLE_API_KEY")
       });
 
