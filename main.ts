@@ -123,8 +123,8 @@ Please generate the HTML output.`;
       pathname = pathname.slice(0, -5);
     }
     
-    // Skip empty paths (already handled above as "/")
-    if (pathname) {
+    // Skip empty paths (already handled above as "/") and special paths like "generate"
+    if (pathname && pathname !== "generate") {
       // Try to read the corresponding markdown file
       const contentPath = `./content/${pathname}.md`;
       
