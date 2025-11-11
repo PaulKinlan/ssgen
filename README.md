@@ -82,6 +82,29 @@ curl -X POST http://localhost:8000/ \
   }'
 ```
 
+**Using the Helper Script:**
+
+For easier POST request management, use the included `ssgen-post.sh` script:
+
+```bash
+# Use content from a file
+./ssgen-post.sh -f examples/sample-content.md
+
+# Provide inline content
+./ssgen-post.sh -c "# Hello World\n\nThis is my content."
+
+# Custom prompt and system prompt
+./ssgen-post.sh -f examples/blog-post.md \
+  -p "Create a modern blog layout" \
+  -s "You are a web design expert"
+
+# Save output to file
+./ssgen-post.sh -f examples/sample-content.md -o output.html
+
+# Show all options
+./ssgen-post.sh --help
+```
+
 ### Custom Prompts
 
 You can customize both the system prompt and user prompt:
