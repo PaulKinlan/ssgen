@@ -113,6 +113,99 @@ Please generate the HTML output.`;
     }
   }
 
+  // Try to serve content from /content directory for other paths
+  try {
+    // Extract pathname and remove leading slash
+    let pathname = url.pathname.slice(1);
+    
+    // Remove .html extension if present
+    if (pathname.endsWith(".html")) {
+      pathname = pathname.slice(0, -5);
+    }
+    
+    // Skip empty paths (already handled above as "/")
+    if (pathname) {
+      // Try to read the corresponding markdown file
+      const contentPath = `./content/${pathname}.md`;
+      
+      try {
+        const markdownContent = await Deno.readTextFile(contentPath);
+        
+        // Build request context with headers and other variables
+        const requestContext: RequestContext = {
+          headers: Object.fromEntries(req.headers.entries()),
+          method: req.method,
+          url: req.url,
+          userAgent: req.headers.get("user-agent") || undefined,
+          ip: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || undefined,
+        };
+
+        // Create the full prompt with context
+        const fullPrompt = `Generate an HTML page from this markdown content.
+
+**Request Context:**
+- Method: ${requestContext.method}
+- URL: ${requestContext.url}
+- User-Agent: ${requestContext.userAgent || "N/A"}
+- IP: ${requestContext.ip || "N/A"}
+
+**Available Headers:**
+${Object.entries(requestContext.headers)
+  .map(([key, value]) => `- ${key}: ${value}`)
+  .join("\n")}
+
+**Markdown Content:**
+${markdownContent}
+
+Please generate the HTML output.`;
+
+        // Initialize Gemini model
+        const model = google("gemini-2.5-flash", {
+          apiKey: Deno.env.get("GOOGLE_GENERATIVE_AI_API_KEY")
+        });
+
+        // Stream the response
+        const result = streamText({
+          model,
+          system: DEFAULT_SYSTEM_PROMPT,
+          prompt: fullPrompt,
+        });
+
+        // Create a streaming response
+        const stream = result.toTextStreamResponse();
+
+        // Return the streaming response with appropriate headers
+        return new Response(stream.body, {
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8",
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Content-Type-Options": "nosniff",
+          },
+        });
+      } catch (error) {
+        // If file not found, fall through to 404
+        if (error instanceof Deno.errors.NotFound) {
+          // Continue to 404
+        } else {
+          console.error("Error reading content file:", error);
+          return new Response(
+            JSON.stringify({
+              error: "Failed to read content",
+              message: "An error occurred while reading the content file.",
+            }),
+            {
+              status: 500,
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error processing request:", error);
+  }
+
   // 404 for other paths
   return new Response(
     JSON.stringify({
