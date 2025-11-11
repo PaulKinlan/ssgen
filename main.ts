@@ -11,7 +11,8 @@ You can customize this content by providing markdown in your request.`;
 // Default system prompt
 const DEFAULT_SYSTEM_PROMPT = `You are a helpful assistant that generates web pages based on markdown content.
 You should convert the markdown into well-structured HTML with appropriate styling.
-Make the output visually appealing and professional.`;
+Make the output visually appealing and professional.
+IMPORTANT: Output only raw HTML without any markdown code fences or backticks. Do not wrap the HTML in \`\`\`html or any other code fence markers.`;
 
 // Default model
 const DEFAULT_MODEL = "gemini-2.0-flash-exp";
@@ -93,10 +94,75 @@ Please generate the HTML output.`;
       // Create a streaming response
       const stream = result.toTextStreamResponse();
 
+      // Create a transform stream to strip code fences
+      interface TransformerContext {
+        buffer: string;
+        hasStarted: boolean;
+        hasEnded: boolean;
+      }
+
+      const transformStream = new TransformStream<Uint8Array, Uint8Array>({
+        start(this: TransformerContext) {
+          this.buffer = '';
+          this.hasStarted = false;
+          this.hasEnded = false;
+        },
+        transform(this: TransformerContext, chunk: Uint8Array, controller: TransformStreamDefaultController<Uint8Array>) {
+          const text = new TextDecoder().decode(chunk);
+          this.buffer += text;
+
+          // Check if we haven't started outputting yet and we have a code fence
+          if (!this.hasStarted) {
+            // Look for opening code fence pattern (```html or ``` at the start)
+            const codeFenceMatch = this.buffer.match(/^```(?:html)?\s*\n/);
+            if (codeFenceMatch) {
+              // Strip the opening fence
+              this.buffer = this.buffer.slice(codeFenceMatch[0].length);
+              this.hasStarted = true;
+            } else if (this.buffer.length > 10 && !this.buffer.startsWith('```')) {
+              // If we have enough content and no fence, start outputting
+              this.hasStarted = true;
+            }
+          }
+
+          // Output content if we've started
+          if (this.hasStarted && !this.hasEnded) {
+            // Check for closing code fence
+            const closingFenceIndex = this.buffer.indexOf('```');
+            if (closingFenceIndex !== -1) {
+              // Output everything before the closing fence
+              const content = this.buffer.slice(0, closingFenceIndex);
+              if (content) {
+                controller.enqueue(new TextEncoder().encode(content));
+              }
+              this.buffer = '';
+              this.hasEnded = true;
+            } else {
+              // Output all but the last few characters (in case closing fence is split across chunks)
+              const safeLength = Math.max(0, this.buffer.length - 3);
+              if (safeLength > 0) {
+                const content = this.buffer.slice(0, safeLength);
+                controller.enqueue(new TextEncoder().encode(content));
+                this.buffer = this.buffer.slice(safeLength);
+              }
+            }
+          }
+        },
+        flush(this: TransformerContext, controller: TransformStreamDefaultController<Uint8Array>) {
+          // Output any remaining buffered content
+          if (this.hasStarted && this.buffer) {
+            controller.enqueue(new TextEncoder().encode(this.buffer));
+          }
+        }
+      });
+
+      // Pipe the stream through the transformer
+      const transformedStream = stream.body?.pipeThrough(transformStream);
+
       // Return the streaming response with appropriate headers
-      return new Response(stream.body, {
+      return new Response(transformedStream, {
         headers: {
-          "Content-Type": "text/plain; charset=utf-8",
+          "Content-Type": "text/html; charset=utf-8",
           "Cache-Control": "no-cache",
           "Connection": "keep-alive",
           "X-Content-Type-Options": "nosniff",
