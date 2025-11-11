@@ -254,7 +254,7 @@ async function handler(req: Request): Promise<Response> {
           output.scrollTop = output.scrollHeight;
         }
       } catch (error) {
-        output.innerHTML = '<div style="color: red;">Error: ' + error.message + '</div>';
+        output.textContent = 'Error: ' + (error instanceof Error ? error.message : 'Unknown error occurred');
       }
     });
   </script>
