@@ -1,5 +1,6 @@
 import { google } from "@ai-sdk/google";
 import { streamText } from "ai";
+import { resolve, normalize } from "@std/path";
 
 // Default markdown content
 const DEFAULT_CONTENT = `# Welcome to Server-Side Generation
@@ -131,11 +132,32 @@ Please generate the HTML output.`;
     
     // Skip empty paths (already handled above as "/") and special paths like "generate"
     if (pathname && pathname !== "generate") {
-      // Try to read the corresponding markdown file
-      const contentPath = `./content/${pathname}.md`;
+      // Resolve the content directory path
+      const contentDir = resolve(Deno.cwd(), "./content");
+      
+      // Normalize the pathname to remove any .. or . segments
+      const normalizedPathname = normalize(pathname);
+      
+      // Construct the full file path
+      const requestedPath = resolve(contentDir, `${normalizedPathname}.md`);
+      
+      // Security check: ensure the resolved path is within the content directory
+      if (!requestedPath.startsWith(contentDir + "/") && requestedPath !== contentDir) {
+        console.error("Path traversal attempt blocked:", pathname);
+        return new Response(
+          JSON.stringify({
+            error: "Forbidden",
+            message: "Access denied.",
+          }),
+          {
+            status: 403,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
       
       try {
-        const markdownContent = await Deno.readTextFile(contentPath);
+        const markdownContent = await Deno.readTextFile(requestedPath);
         
         // Build request context with headers and other variables
         const requestContext: RequestContext = {
