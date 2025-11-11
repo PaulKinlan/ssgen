@@ -102,13 +102,19 @@ Please generate the HTML output.`;
       const stream = result.toTextStreamResponse();
 
       // Create a transform stream to strip code fences
-      const transformStream = new TransformStream({
-        start(controller) {
+      interface TransformerContext {
+        buffer: string;
+        hasStarted: boolean;
+        hasEnded: boolean;
+      }
+
+      const transformStream = new TransformStream<Uint8Array, Uint8Array>({
+        start(this: TransformerContext) {
           this.buffer = '';
           this.hasStarted = false;
           this.hasEnded = false;
         },
-        transform(chunk, controller) {
+        transform(this: TransformerContext, chunk: Uint8Array, controller: TransformStreamDefaultController<Uint8Array>) {
           const text = new TextDecoder().decode(chunk);
           this.buffer += text;
 
@@ -149,7 +155,7 @@ Please generate the HTML output.`;
             }
           }
         },
-        flush(controller) {
+        flush(this: TransformerContext, controller: TransformStreamDefaultController<Uint8Array>) {
           // Output any remaining buffered content
           if (this.hasStarted && this.buffer) {
             controller.enqueue(new TextEncoder().encode(this.buffer));
