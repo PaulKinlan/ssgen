@@ -75,8 +75,9 @@ ${markdownContent}
 Please generate the HTML output.`;
 
       // Initialize Gemini model
-      const model = google("gemini-2.0-flash-exp", {
+      const model = google("gemini-2.5-flash, {
         // Optional: Add model configuration here
+        apiKey: process.env("GOOGLE_API_KEY")
       });
 
       // Stream the response
