@@ -76,7 +76,7 @@ Please generate the HTML output.`;
 
       // Initialize Gemini model
       const model = google("gemini-2.5-flash", {
-        apiKey: Deno.env.get("GOOGLE_API_KEY")
+        apiKey: Deno.env.get("GOOGLE_GENERATIVE_AI_API_KEY")
       });
 
       // Stream the response
