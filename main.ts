@@ -14,6 +14,9 @@ You should convert the markdown into well-structured HTML with appropriate styli
 Make the output visually appealing and professional.
 IMPORTANT: Output only raw HTML without any markdown code fences or backticks. Do not wrap the HTML in \`\`\`html or any other code fence markers.`;
 
+// Default model
+const DEFAULT_MODEL = "gemini-2.5-flash";
+
 interface RequestContext {
   headers: Record<string, string>;
   method: string;
@@ -46,6 +49,7 @@ async function handler(req: Request): Promise<Response> {
       const markdownContent = requestBody.content || url.searchParams.get("content") || DEFAULT_CONTENT;
       const systemPrompt = requestBody.systemPrompt || url.searchParams.get("systemPrompt") || DEFAULT_SYSTEM_PROMPT;
       const userPrompt = requestBody.prompt || url.searchParams.get("prompt") || "Generate an HTML page from this markdown content.";
+      const modelName = requestBody.model || url.searchParams.get("model") || DEFAULT_MODEL;
 
       // Build request context with headers and other variables
       const requestContext: RequestContext = {
@@ -76,7 +80,7 @@ ${markdownContent}
 Please generate the HTML output.`;
 
       // Initialize Gemini model
-      const model = google("gemini-2.5-flash", {
+      const model = google(modelName, {
         apiKey: Deno.env.get("GOOGLE_GENERATIVE_AI_API_KEY")
       });
 

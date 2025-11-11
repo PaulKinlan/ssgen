@@ -10,6 +10,7 @@
 #   -f, --file <path>            Read content from a file (e.g., examples/sample-content.md)
 #   -p, --prompt <text>          User prompt for the LLM
 #   -s, --system-prompt <text>   System prompt to configure LLM behavior
+#   -m, --model <name>           Model to use (default: gemini-2.5-flash)
 #   -u, --url <url>              Server URL (default: http://localhost:8000/)
 #   -o, --output <file>          Save output to file instead of stdout
 #   -h, --help                   Show this help message
@@ -29,6 +30,9 @@
 #     -s "You are a web design expert" \
 #     -p "Create a portfolio page with Tailwind CSS"
 #
+#   # Use a different model
+#   ./ssgen-post.sh -f examples/sample-content.md -m "gemini-2.5-pro"
+#
 #   # Save output to file
 #   ./ssgen-post.sh -f examples/sample-content.md -o output.html
 
@@ -40,6 +44,7 @@ CONTENT=""
 FILE=""
 PROMPT=""
 SYSTEM_PROMPT=""
+MODEL=""
 OUTPUT=""
 
 # Function to display help
@@ -81,6 +86,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -s|--system-prompt)
             SYSTEM_PROMPT="$2"
+            shift 2
+            ;;
+        -m|--model)
+            MODEL="$2"
             shift 2
             ;;
         -u|--url)
@@ -142,6 +151,10 @@ fi
 
 if [ -n "$SYSTEM_PROMPT" ]; then
     JSON_PAYLOAD+=", \"systemPrompt\": $(escape_json "$SYSTEM_PROMPT")"
+fi
+
+if [ -n "$MODEL" ]; then
+    JSON_PAYLOAD+=", \"model\": $(escape_json "$MODEL")"
 fi
 
 JSON_PAYLOAD+="}"
