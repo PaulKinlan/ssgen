@@ -16,7 +16,7 @@ Make the output visually appealing and professional.
 IMPORTANT: Output only raw HTML without any markdown code fences or backticks. Do not wrap the HTML in \`\`\`html or any other code fence markers.`;
 
 // Default model
-const DEFAULT_MODEL = "gemini-2.0-flash-exp";
+const DEFAULT_MODEL = "gemini-2.5-flash";
 
 interface RequestContext {
   headers: Record<string, string>;

@@ -125,7 +125,7 @@ You can specify which Gemini model to use via query parameter (GET) or request b
 
 **GET Request:**
 ```bash
-curl "http://localhost:8000/?model=gemini-1.5-pro&content=Hello+World"
+curl "http://localhost:8000/?model=gemini-2.5-pro&content=Hello+World"
 ```
 
 **POST Request:**
@@ -134,15 +134,15 @@ curl -X POST http://localhost:8000/ \
   -H "Content-Type: application/json" \
   -d '{
     "content": "# My Content",
-    "model": "gemini-1.5-flash",
+    "model": "gemini-2.5-flash-lite",
     "prompt": "Generate a simple HTML page"
   }'
 ```
 
 Available models include:
-- `gemini-2.0-flash-exp` (default, latest experimental)
-- `gemini-1.5-pro` (more powerful, slower)
-- `gemini-1.5-flash` (faster, lighter)
+- `gemini-2.5-flash` (default)
+- `gemini-2.5-flash-lite` (lighter, faster)
+- `gemini-2.5-pro` (most powerful)
 
 ### Request Context
 
@@ -167,7 +167,7 @@ Generate content from markdown.
 - `content` (optional): Markdown content to process
 - `prompt` (optional): User prompt for the LLM
 - `systemPrompt` (optional): System prompt to configure LLM behavior
-- `model` (optional): Model to use (e.g., "gemini-2.0-flash-exp", "gemini-1.5-pro", "gemini-1.5-flash"). Defaults to "gemini-2.0-flash-exp"
+- `model` (optional): Model to use (e.g., "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.5-pro"). Defaults to "gemini-2.5-flash"
 
 **Request Body (POST):**
 ```json
@@ -175,7 +175,7 @@ Generate content from markdown.
   "content": "Markdown content here",
   "prompt": "Optional user prompt",
   "systemPrompt": "Optional system prompt",
-  "model": "Optional model name (e.g., gemini-2.0-flash-exp)"
+  "model": "Optional model name (e.g., gemini-2.5-flash)"
 }
 ```
 
@@ -218,19 +218,19 @@ deployctl deploy --project=your-project-name main.ts
 You can now specify which model to use on a per-request basis using the `model` parameter in query strings (GET) or request body (POST). This allows you to dynamically choose the model without changing code:
 
 ```bash
-# Use gemini-1.5-pro for a specific request
-curl "http://localhost:8000/?model=gemini-1.5-pro&content=Hello"
+# Use gemini-2.5-pro for a specific request
+curl "http://localhost:8000/?model=gemini-2.5-pro&content=Hello"
 ```
 
-The default model is `gemini-2.0-flash-exp`. Available models include:
-- `gemini-2.0-flash-exp` (default, latest experimental)
-- `gemini-1.5-pro` (more powerful, slower)
-- `gemini-1.5-flash` (faster, lighter)
+The default model is `gemini-2.5-flash`. Available models include:
+- `gemini-2.5-flash` (default)
+- `gemini-2.5-flash-lite` (lighter, faster)
+- `gemini-2.5-pro` (most powerful)
 
 To change the default model for all requests, edit the `DEFAULT_MODEL` constant in `main.ts`:
 
 ```typescript
-const DEFAULT_MODEL = "gemini-2.0-flash-exp"; // Change this to any supported model
+const DEFAULT_MODEL = "gemini-2.5-flash"; // Change this to any supported model
 ```
 
 Thanks to the Vercel AI SDK, you can also easily switch to other providers (OpenAI, Anthropic, etc.) by changing the import and model initialization.
