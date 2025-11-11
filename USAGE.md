@@ -98,7 +98,7 @@ You can specify which model to use via GET query parameter or POST body:
 
 **GET Request with Model Parameter:**
 ```bash
-curl "http://localhost:8000/?model=gemini-1.5-pro&content=Hello+World&prompt=Generate+HTML"
+curl "http://localhost:8000/?model=gemini-2.5-pro&content=Hello+World&prompt=Generate+HTML"
 ```
 
 **POST Request with Model Parameter:**
@@ -107,16 +107,16 @@ curl -X POST http://localhost:8000/ \
   -H "Content-Type: application/json" \
   -d '{
     "content": "# Technical Documentation",
-    "model": "gemini-1.5-pro",
+    "model": "gemini-2.5-pro",
     "prompt": "Create comprehensive technical documentation",
     "systemPrompt": "You are a technical writing expert."
   }'
 ```
 
 Available models:
-- `gemini-2.0-flash-exp` (default, fastest, latest experimental)
-- `gemini-1.5-pro` (more powerful, better for complex tasks)
-- `gemini-1.5-flash` (fast, good for simple tasks)
+- `gemini-2.5-flash` (default)
+- `gemini-2.5-flash-lite` (lighter, faster)
+- `gemini-2.5-pro` (most powerful)
 
 ### 7. Landing Page Generation
 
@@ -136,14 +136,14 @@ You can now test with different Gemini models without modifying code! Simply pas
 
 **Using GET:**
 ```bash
-# Test with Gemini 1.5 Pro (more powerful, slower)
-curl "http://localhost:8000/?model=gemini-1.5-pro&content=Hello"
+# Test with Gemini 2.5 Flash (default)
+curl "http://localhost:8000/?model=gemini-2.5-flash&content=Hello"
 
-# Test with Gemini 1.5 Flash (faster, lighter)
-curl "http://localhost:8000/?model=gemini-1.5-flash&content=Hello"
+# Test with Gemini 2.5 Flash Lite (lighter, faster)
+curl "http://localhost:8000/?model=gemini-2.5-flash-lite&content=Hello"
 
-# Test with Gemini 2.0 Flash Experimental (default, latest)
-curl "http://localhost:8000/?model=gemini-2.0-flash-exp&content=Hello"
+# Test with Gemini 2.5 Pro (most powerful)
+curl "http://localhost:8000/?model=gemini-2.5-pro&content=Hello"
 ```
 
 **Using POST:**
@@ -152,7 +152,7 @@ curl -X POST http://localhost:8000/ \
   -H "Content-Type: application/json" \
   -d '{
     "content": "# Test Content",
-    "model": "gemini-1.5-pro"
+    "model": "gemini-2.5-pro"
   }'
 ```
 
@@ -231,7 +231,7 @@ The PORT variable is automatically provided by Deno Deploy.
 **Solution**: Let Deno download dependencies on first run. Make sure you have internet access.
 
 ### Issue: Slow responses
-**Solution**: Try using `gemini-1.5-flash` for faster (but potentially lower quality) responses.
+**Solution**: Try using `gemini-2.5-flash-lite` for faster (but potentially lower quality) responses.
 
 ## Advanced Usage
 
