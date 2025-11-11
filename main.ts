@@ -103,7 +103,7 @@ Please generate the HTML output.`;
       return new Response(
         JSON.stringify({
           error: "Failed to generate content",
-          message: error instanceof Error ? error.message : String(error),
+          message: "An error occurred while processing your request. Please check your API configuration and try again.",
         }),
         {
           status: 500,
