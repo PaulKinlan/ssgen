@@ -35,6 +35,25 @@ async function handler(req: Request): Promise<Response> {
 
   // Main generation endpoint
   if (url.pathname === "/" || url.pathname === "/generate") {
+    // Return HTML form for GET requests without content parameter
+    if (req.method === "GET" && !url.searchParams.get("content")) {
+      // Read the HTML template from file
+      const formTemplate = await Deno.readTextFile(
+        new URL("./form.html", import.meta.url).pathname
+      );
+      
+      // Perform substitutions
+      const formHtml = formTemplate
+        .replace("{{DEFAULT_CONTENT}}", DEFAULT_CONTENT)
+        .replace("{{DEFAULT_SYSTEM_PROMPT}}", DEFAULT_SYSTEM_PROMPT);
+      
+      return new Response(formHtml, {
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+        },
+      });
+    }
+
     try {
       // Parse request body if present
       let requestBody: any = {};
