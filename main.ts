@@ -21,6 +21,12 @@ interface RequestContext {
   ip?: string;
 }
 
+interface RequestBody {
+  content?: string;
+  systemPrompt?: string;
+  prompt?: string;
+}
+
 async function handler(req: Request): Promise<Response> {
   const url = new URL(req.url);
 
@@ -33,7 +39,7 @@ async function handler(req: Request): Promise<Response> {
   if (url.pathname === "/" || url.pathname === "/generate") {
     try {
       // Parse request body if present
-      let requestBody: any = {};
+      let requestBody: RequestBody = {};
       if (req.method === "POST") {
         const contentType = req.headers.get("content-type");
         if (contentType?.includes("application/json")) {
