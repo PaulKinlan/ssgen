@@ -1,4 +1,6 @@
 ---
+title: "Inline Prompt Test Page"
+description: "A test page demonstrating inline prompt support with proper SEO metadata."
 prompt: "You are a helpful HTML writer that creates accessible, semantic HTML5 pages with clean styling."
 ---
 
