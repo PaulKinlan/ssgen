@@ -3,15 +3,7 @@ import { parseYamlFrontMatter } from "../utils/content.ts";
 import { resolvePrompt } from "../utils/prompt.ts";
 import { buildRequestContext, buildFullPrompt, extractRequestParams } from "../utils/request.ts";
 import { generateStreamingResponse } from "../utils/ai.ts";
-
-// Default system prompt
-const DEFAULT_SYSTEM_PROMPT = `You are a helpful assistant that generates web pages based on markdown content.
-You should convert the markdown into well-structured HTML with appropriate styling.
-Make the output visually appealing and professional.
-IMPORTANT: Output only raw HTML without any markdown code fences or backticks. Do not wrap the HTML in \`\`\`html or any other code fence markers.`;
-
-// Default model
-const DEFAULT_MODEL = "gemini-2.5-flash";
+import { DEFAULT_SYSTEM_PROMPT, DEFAULT_MODEL } from "../utils/constants.ts";
 
 /**
  * Handle content directory file serving

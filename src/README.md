@@ -13,6 +13,7 @@ src/
 │   └── content.ts   # Content directory serving endpoint
 └── utils/           # Shared utilities
     ├── ai.ts        # AI model initialization and streaming
+    ├── constants.ts # Shared constants (default prompts, models, content)
     ├── content.ts   # YAML front matter parsing
     ├── prompt.ts    # Prompt resolution (file or inline)
     ├── request.ts   # Request context and parameter extraction
@@ -45,6 +46,11 @@ Serves markdown files from the `/content` directory:
 
 ### AI Utilities (`ai.ts`)
 - `generateStreamingResponse()`: Main function to generate streaming HTML from AI
+
+### Constants (`constants.ts`)
+- `DEFAULT_CONTENT`: Default markdown content for the welcome page
+- `DEFAULT_SYSTEM_PROMPT`: Default system prompt for AI generation
+- `DEFAULT_MODEL`: Default AI model name
 
 ### Content Utilities (`content.ts`)
 - `parseYamlFrontMatter()`: Parse YAML front matter from markdown files
