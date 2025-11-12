@@ -1,6 +1,7 @@
 import { google } from "@ai-sdk/google";
 import { streamText } from "ai";
 import { resolve, normalize } from "@std/path";
+import { parse as parseYaml } from "@std/yaml";
 
 // Default markdown content
 const DEFAULT_CONTENT = `# Welcome to Server-Side Generation
@@ -17,6 +18,77 @@ IMPORTANT: Output only raw HTML without any markdown code fences or backticks. D
 
 // Default model
 const DEFAULT_MODEL = "gemini-2.5-flash";
+
+interface YamlFrontMatter {
+  prompt?: string;
+  [key: string]: unknown;
+}
+
+interface ParsedContent {
+  frontMatter: YamlFrontMatter | null;
+  content: string;
+}
+
+/**
+ * Parse YAML front matter from markdown content
+ * Returns the front matter object and the content without the front matter
+ */
+function parseYamlFrontMatter(markdown: string): ParsedContent {
+  const frontMatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/;
+  const match = markdown.match(frontMatterRegex);
+  
+  if (!match) {
+    return { frontMatter: null, content: markdown };
+  }
+  
+  try {
+    const yamlContent = match[1];
+    const contentWithoutFrontMatter = match[2];
+    const frontMatter = parseYaml(yamlContent) as YamlFrontMatter;
+    
+    return {
+      frontMatter,
+      content: contentWithoutFrontMatter,
+    };
+  } catch (error) {
+    console.error("Error parsing YAML front matter:", error);
+    return { frontMatter: null, content: markdown };
+  }
+}
+
+/**
+ * Load prompt from file or return inline prompt
+ * If prompt starts with a path-like string (contains .md), treat it as a file path
+ * Otherwise, treat it as an inline prompt
+ */
+async function resolvePrompt(prompt: string): Promise<string> {
+  // Check if this looks like a file path (ends with .md or contains /)
+  if (prompt.endsWith('.md') || prompt.includes('/')) {
+    try {
+      // Resolve path relative to the current working directory
+      const promptPath = resolve(Deno.cwd(), prompt);
+      
+      // Security check: ensure path is within allowed directories
+      const cwd = Deno.cwd();
+      const promptsDir = resolve(cwd, "./prompts");
+      
+      if (!promptPath.startsWith(promptsDir + "/") && promptPath !== promptsDir) {
+        console.error("Prompt file path outside of prompts directory:", prompt);
+        return prompt; // Return as inline prompt if path is invalid
+      }
+      
+      // Read the prompt file
+      const promptContent = await Deno.readTextFile(promptPath);
+      return promptContent.trim();
+    } catch (error) {
+      console.error("Error reading prompt file:", error);
+      return prompt; // Fall back to treating it as inline prompt
+    }
+  }
+  
+  // Treat as inline prompt
+  return prompt;
+}
 
 interface RequestContext {
   headers: Record<string, string>;
@@ -72,10 +144,20 @@ async function handler(req: Request): Promise<Response> {
       }
 
       // Extract markdown content and prompt from request
-      const markdownContent = requestBody.content || url.searchParams.get("content") || DEFAULT_CONTENT;
+      const rawMarkdownContent = requestBody.content || url.searchParams.get("content") || DEFAULT_CONTENT;
       const systemPrompt = requestBody.systemPrompt || url.searchParams.get("systemPrompt") || DEFAULT_SYSTEM_PROMPT;
-      const userPrompt = requestBody.prompt || url.searchParams.get("prompt") || "Generate an HTML page from this markdown content.";
+      let userPrompt = requestBody.prompt || url.searchParams.get("prompt") || "";
       const modelName = requestBody.model || url.searchParams.get("model") || DEFAULT_MODEL;
+
+      // Parse YAML front matter from markdown content
+      const { frontMatter, content: markdownContent } = parseYamlFrontMatter(rawMarkdownContent);
+      
+      // If there's a prompt in the front matter and no explicit prompt was provided, use it
+      if (!userPrompt && frontMatter && frontMatter.prompt) {
+        userPrompt = await resolvePrompt(frontMatter.prompt);
+      } else if (!userPrompt) {
+        userPrompt = "Generate an HTML page from this markdown content.";
+      }
 
       // Build request context with headers and other variables
       const requestContext: RequestContext = {
@@ -246,7 +328,16 @@ Please generate the HTML output.`;
       }
       
       try {
-        const markdownContent = await Deno.readTextFile(requestedPath);
+        const rawMarkdownContent = await Deno.readTextFile(requestedPath);
+        
+        // Parse YAML front matter
+        const { frontMatter, content: markdownContent } = parseYamlFrontMatter(rawMarkdownContent);
+        
+        // Resolve prompt from front matter
+        let userPrompt = "Generate an HTML page from this markdown content.";
+        if (frontMatter && frontMatter.prompt) {
+          userPrompt = await resolvePrompt(frontMatter.prompt);
+        }
         
         // Build request context with headers and other variables
         const requestContext: RequestContext = {
@@ -258,7 +349,7 @@ Please generate the HTML output.`;
         };
 
         // Create the full prompt with context
-        const fullPrompt = `Generate an HTML page from this markdown content.
+        const fullPrompt = `${userPrompt}
 
 **Request Context:**
 - Method: ${requestContext.method}
