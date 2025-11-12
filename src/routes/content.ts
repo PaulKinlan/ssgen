@@ -67,11 +67,17 @@ export async function handleContent(req: Request, url: URL): Promise<Response | 
       const systemPrompt = params.systemPrompt || DEFAULT_SYSTEM_PROMPT;
       const modelName = params.model || DEFAULT_MODEL;
       
+      // Extract metadata from front matter
+      const metadata = frontMatter ? {
+        title: frontMatter.title,
+        description: frontMatter.description,
+      } : undefined;
+      
       // Build request context with headers and other variables
       const requestContext = buildRequestContext(req);
 
-      // Create the full prompt with context
-      const fullPrompt = buildFullPrompt(userPrompt, markdownContent, requestContext);
+      // Create the full prompt with context and metadata
+      const fullPrompt = buildFullPrompt(userPrompt, markdownContent, requestContext, metadata);
 
       // Generate and return streaming response
       return await generateStreamingResponse(systemPrompt, fullPrompt, modelName);

@@ -7,6 +7,7 @@ A flexible server-side generation service that runs on Deno Deploy. Generate dyn
 - 🚀 **Deno Deploy Ready**: Built to run on Deno Deploy
 - 🤖 **AI-Powered**: Uses Vercel AI SDK with Google's Gemini Flash 2.5
 - 📝 **Markdown Support**: Describe content in simple markdown
+- 🏷️ **SEO-Friendly**: Add title and description metadata via YAML front matter
 - 🌊 **Streaming Responses**: Real-time content generation
 - 🔍 **Context-Aware**: LLM has full access to HTTP headers and request variables
 - ⚡ **Fast & Flexible**: Easy to change prompts and source data
@@ -155,6 +156,53 @@ The LLM automatically receives information about the request:
 
 This allows the AI to generate personalized content based on the request context.
 
+### YAML Front Matter
+
+You can include YAML front matter at the beginning of your markdown files to add metadata and customize behavior:
+
+```markdown
+---
+title: "My Page Title"
+description: "A description for SEO and social sharing"
+prompt: "prompts/custom-prompt.md"
+---
+
+# Your Markdown Content
+
+The rest of your content goes here...
+```
+
+**Supported Fields:**
+
+- `title` (optional): Page title that will be included in the `<title>` tag of the generated HTML
+- `description` (optional): Page description that will be included in a `<meta name="description">` tag
+- `prompt` (optional): Custom prompt for the AI. Can be either:
+  - An inline string: `prompt: "Create a modern, minimalist design"`
+  - A file path: `prompt: "prompts/custom-prompt.md"` (must be in the `prompts/` directory)
+
+**Examples:**
+
+See the `examples/with-metadata.md` file for a complete example of using metadata:
+
+```bash
+curl http://localhost:8000/?content="$(cat examples/with-metadata.md | jq -sRr @uri)"
+```
+
+Or place a file with metadata in the `content/` directory:
+
+```bash
+# content/my-page.md
+---
+title: "Welcome to My Site"
+description: "Learn about our services and offerings"
+---
+
+# My Content
+...
+```
+
+Then access it at `/my-page` or `/my-page.html`.
+
 ## API Reference
 
 ### Endpoints
@@ -240,6 +288,7 @@ Thanks to the Vercel AI SDK, you can also easily switch to other providers (Open
 See the `examples/` directory for sample markdown files:
 - `sample-content.md`: A portfolio page example
 - `blog-post.md`: A blog post example
+- `with-metadata.md`: Example showing YAML front matter with title and description metadata
 
 ## Development
 
