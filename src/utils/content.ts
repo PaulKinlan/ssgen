@@ -2,6 +2,8 @@ import { parse as parseYaml } from "@std/yaml";
 
 export interface YamlFrontMatter {
   prompt?: string;
+  title?: string;
+  description?: string;
   [key: string]: unknown;
 }
 
