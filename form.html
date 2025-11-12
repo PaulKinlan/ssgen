@@ -108,31 +108,6 @@
       border-radius: 3px;
       font-size: 0.9em;
     }
-    .output-section {
-      margin-top: 30px;
-      display: none;
-    }
-    .output-section.visible {
-      display: block;
-    }
-    .output-content {
-      background: #f8f9fa;
-      border: 2px solid #e0e0e0;
-      border-radius: 6px;
-      padding: 20px;
-      min-height: 200px;
-      max-height: 500px;
-      overflow-y: auto;
-      font-family: 'Courier New', monospace;
-      font-size: 14px;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-    }
-    .loading {
-      text-align: center;
-      padding: 20px;
-      color: #667eea;
-    }
   </style>
 </head>
 <body>
@@ -146,7 +121,7 @@
       <p style="margin-top: 10px;"><strong>Endpoint:</strong> <code>POST /generate</code> or <code>POST /</code></p>
     </div>
 
-    <form id="generateForm">
+    <form id="generateForm" method="POST" action="/generate" target="_blank">
       <div class="form-group">
         <label for="content">Markdown Content</label>
         <textarea id="content" name="content" class="content-textarea" placeholder="# Welcome to SSGen&#10;&#10;Enter your markdown content here...">{{DEFAULT_CONTENT}}</textarea>
@@ -167,26 +142,27 @@
 
       <button type="submit">Generate Content</button>
     </form>
-
-    <div id="outputSection" class="output-section">
-      <h3>Generated Output:</h3>
-      <div id="output" class="output-content"></div>
-    </div>
   </div>
 
   <script>
     document.getElementById('generateForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
+      const form = e.target;
       const content = document.getElementById('content').value;
       const prompt = document.getElementById('prompt').value;
       const systemPrompt = document.getElementById('systemPrompt').value;
       
-      const outputSection = document.getElementById('outputSection');
-      const output = document.getElementById('output');
+      // Open a new window to show the generated content
+      const newWindow = window.open('about:blank', '_blank');
       
-      outputSection.classList.add('visible');
-      output.innerHTML = '<div class="loading">⏳ Generating content...</div>';
+      if (!newWindow) {
+        alert('Please allow pop-ups for this site to view generated content.');
+        return;
+      }
+      
+      // Show loading message in the new window
+      newWindow.document.write('<html><head><title>Generating...</title><style>body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f5f5f5; } .loading { text-align: center; font-size: 1.2em; color: #667eea; }</style></head><body><div class="loading">⏳ Generating content...</div></body></html>');
       
       try {
         const response = await fetch('/generate', {
@@ -208,18 +184,25 @@
         // Handle streaming response
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
-        output.innerHTML = '';
+        
+        // Clear the new window and prepare for content
+        newWindow.document.open();
+        newWindow.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>');
         
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
           
           const chunk = decoder.decode(value, { stream: true });
-          output.innerHTML += chunk;
-          output.scrollTop = output.scrollHeight;
+          newWindow.document.write(chunk);
         }
+        
+        newWindow.document.write('</body></html>');
+        newWindow.document.close();
       } catch (error) {
-        output.textContent = 'Error: ' + (error instanceof Error ? error.message : 'Unknown error occurred');
+        newWindow.document.open();
+        newWindow.document.write('<html><head><title>Error</title><style>body { font-family: sans-serif; padding: 20px; }</style></head><body><h1>Error</h1><p>' + (error instanceof Error ? error.message : 'Unknown error occurred') + '</p></body></html>');
+        newWindow.document.close();
       }
     });
   </script>
