@@ -1,7 +1,13 @@
 import { parse as parseYaml } from "@std/yaml";
 
+export interface StyleConfig {
+  brand?: string;
+  image?: string;
+}
+
 export interface YamlFrontMatter {
   prompt?: string;
+  style?: StyleConfig | StyleConfig[];
   [key: string]: unknown;
 }
 

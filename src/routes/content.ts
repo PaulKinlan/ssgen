@@ -1,6 +1,7 @@
 import { resolve, normalize } from "@std/path";
 import { parseYamlFrontMatter } from "../utils/content.ts";
 import { resolvePrompt } from "../utils/prompt.ts";
+import { resolveStyleConfig } from "../utils/style.ts";
 import { buildRequestContext, buildFullPrompt, extractRequestParams } from "../utils/request.ts";
 import { generateStreamingResponse } from "../utils/ai.ts";
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_MODEL } from "../utils/constants.ts";
@@ -67,6 +68,11 @@ export async function handleContent(req: Request, url: URL): Promise<Response | 
       const systemPrompt = params.systemPrompt || DEFAULT_SYSTEM_PROMPT;
       const modelName = params.model || DEFAULT_MODEL;
       
+      // Resolve style configuration from front matter
+      const styleConfig = frontMatter?.style 
+        ? await resolveStyleConfig(frontMatter.style)
+        : undefined;
+      
       // Build request context with headers and other variables
       const requestContext = buildRequestContext(req);
 
@@ -74,7 +80,7 @@ export async function handleContent(req: Request, url: URL): Promise<Response | 
       const fullPrompt = buildFullPrompt(userPrompt, markdownContent, requestContext);
 
       // Generate and return streaming response
-      return await generateStreamingResponse(systemPrompt, fullPrompt, modelName);
+      return await generateStreamingResponse(systemPrompt, fullPrompt, modelName, styleConfig);
     } catch (error) {
       // If file not found, return null to fall through to 404
       if (error instanceof Deno.errors.NotFound) {
