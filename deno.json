@@ -5,7 +5,8 @@
   },
   "imports": {
     "ai": "npm:ai@^5.0.92",
-    "@ai-sdk/google": "npm:@ai-sdk/google@^2.0.31"
+    "@ai-sdk/google": "npm:@ai-sdk/google@^2.0.31",
+    "@std/path": "jsr:@std/path@^1.0.8"
   },
   "compilerOptions": {
     "lib": ["deno.window", "deno.unstable"]

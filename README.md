@@ -41,6 +41,22 @@ The server will start on `http://localhost:8000`
 
 ## Usage
 
+### Serving Content from Files
+
+The server can automatically serve markdown files from the `content/` directory:
+
+```bash
+# Visit /about or /about.html to see content from content/about.md
+curl http://localhost:8000/about
+
+# Visit /contact or /contact.html to see content from content/contact.md
+curl http://localhost:8000/contact
+```
+
+To add your own pages:
+1. Create a markdown file in the `content/` directory (e.g., `content/services.md`)
+2. Access it at `/services` or `/services.html`
+
 ### Basic Request
 
 Make a GET request to generate content from default markdown:
