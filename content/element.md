@@ -1,5 +1,5 @@
 ---
-prompt: /prompts/element.md
+prompt: /element.md
 ---
 
 This is a test page testing how elements being automatically generated.
