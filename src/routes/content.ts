@@ -84,6 +84,8 @@ export async function handleContent(req: Request, url: URL): Promise<Response | 
       // Create the full prompt with context and metadata
       const fullPrompt = buildFullPrompt(userPrompt, markdownContent, requestContext, metadata);
 
+      console.log(`fullPrompt: ${fullPrompt}`);
+
       // Generate and return streaming response
       return await generateStreamingResponse(systemPrompt, fullPrompt, modelName, styleConfig);
     } catch (error) {
