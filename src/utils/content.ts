@@ -8,6 +8,8 @@ export interface StyleConfig {
 export interface YamlFrontMatter {
   prompt?: string;
   style?: StyleConfig | StyleConfig[];
+  title?: string;
+  description?: string;
   [key: string]: unknown;
 }
 

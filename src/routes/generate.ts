@@ -52,12 +52,17 @@ export async function handleGenerate(req: Request, url: URL): Promise<Response> 
     const styleConfig = frontMatter?.style 
       ? await resolveStyleConfig(frontMatter.style)
       : undefined;
+    // Extract metadata from front matter
+    const metadata = frontMatter ? {
+      title: frontMatter.title,
+      description: frontMatter.description,
+    } : undefined;
 
     // Build request context with headers and other variables
     const requestContext = buildRequestContext(req);
 
-    // Create the full prompt with context
-    const fullPrompt = buildFullPrompt(userPrompt, markdownContent, requestContext);
+    // Create the full prompt with context and metadata
+    const fullPrompt = buildFullPrompt(userPrompt, markdownContent, requestContext, metadata);
 
     // Generate and return streaming response
     return await generateStreamingResponse(systemPrompt, fullPrompt, modelName, styleConfig);

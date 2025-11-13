@@ -26,16 +26,34 @@ export function buildRequestContext(req: Request): RequestContext {
   };
 }
 
+export interface Metadata {
+  title?: string;
+  description?: string;
+}
+
 /**
- * Build full prompt with request context
+ * Build full prompt with request context and optional metadata
  */
 export function buildFullPrompt(
   userPrompt: string,
   markdownContent: string,
-  requestContext: RequestContext
+  requestContext: RequestContext,
+  metadata?: Metadata
 ): string {
-  return `${userPrompt}
+  let metadataInstructions = "";
+  
+  if (metadata && (metadata.title || metadata.description)) {
+    metadataInstructions = "\n**Metadata to include in HTML:**\n";
+    if (metadata.title) {
+      metadataInstructions += `- Title: ${metadata.title} (add this to the <title> tag)\n`;
+    }
+    if (metadata.description) {
+      metadataInstructions += `- Description: ${metadata.description} (add this to a <meta name="description"> tag)\n`;
+    }
+  }
 
+  return `${userPrompt}
+${metadataInstructions}
 **Request Context:**
 - Method: ${requestContext.method}
 - URL: ${requestContext.url}
