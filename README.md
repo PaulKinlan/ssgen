@@ -7,6 +7,7 @@ A flexible server-side generation service that runs on Deno Deploy. Generate dyn
 - 🚀 **Deno Deploy Ready**: Built to run on Deno Deploy
 - 🤖 **AI-Powered**: Uses Vercel AI SDK with Google's Gemini Flash 2.5
 - 📝 **Markdown Support**: Describe content in simple markdown
+- 🎨 **Style Influence**: Control output style with brand guidelines and reference images
 - 🏷️ **SEO-Friendly**: Add title and description metadata via YAML front matter
 - 🌊 **Streaming Responses**: Real-time content generation
 - 🔍 **Context-Aware**: LLM has full access to HTTP headers and request variables
@@ -144,6 +145,73 @@ Available models include:
 - `gemini-2.5-flash` (default)
 - `gemini-2.5-flash-lite` (lighter, faster)
 - `gemini-2.5-pro` (most powerful)
+
+### Style Influence with Brand Guidelines and Images
+
+You can control the visual style of generated HTML by providing brand guidelines and/or reference images in the YAML front matter of your markdown files:
+
+```yaml
+---
+style:
+  brand: brands/modern-tech.md
+  image: images/style-reference.png
+---
+```
+
+Or use multiple style configurations:
+
+```yaml
+---
+style:
+  - brand: brands/company-brand.md
+  - image: images/design-inspiration.png
+---
+```
+
+**Brand Guidelines:**
+- Create markdown files in the `./brands/` or `./content/` directories
+- Include information about colors, typography, layout principles, and design philosophy
+- The brand guidelines are added to the system prompt and influence the AI's design decisions
+
+**Reference Images:**
+- Place images in `./images/`, `./content/`, or `./assets/` directories
+- Supported formats: PNG, JPEG, GIF, WebP, SVG
+- Images are sent to the AI (multimodal) as visual style inspiration
+- The AI analyzes the images and applies similar design aesthetics to the generated HTML
+
+**Example brand guidelines file (`brands/modern-tech.md`):**
+```markdown
+# Modern Tech Brand Guidelines
+
+## Color Palette
+- Primary: Deep Blue (#1a365d)
+- Secondary: Electric Cyan (#00d4ff)
+- Accent: Vibrant Purple (#9333ea)
+
+## Typography
+- Headings: Bold, modern sans-serif
+- Body: Clean, readable fonts with good spacing
+
+## Design Principles
+- Minimalism with plenty of white space
+- Modern design patterns with subtle shadows
+- Responsive and accessible
+```
+
+**Example usage:**
+```bash
+# Serve content with style configuration
+curl http://localhost:8000/style-brand-example
+
+# Or via POST with inline content
+curl -X POST http://localhost:8000/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "---\nstyle:\n  brand: brands/modern-tech.md\n---\n# My Page\n\nContent here"
+  }'
+```
+
+See the `content/style-*-example.md` files and `brands/` directory for complete examples.
 
 ### Request Context
 
@@ -289,6 +357,15 @@ See the `examples/` directory for sample markdown files:
 - `sample-content.md`: A portfolio page example
 - `blog-post.md`: A blog post example
 - `with-metadata.md`: Example showing YAML front matter with title and description metadata
+
+### Style Influence Examples
+
+See the `content/` directory for style influence examples:
+- `style-brand-example.md`: Using brand guidelines
+- `style-image-example.md`: Using reference images
+- `style-combined-example.md`: Combining both approaches
+
+For detailed documentation on the style influence feature, see [STYLE_EXAMPLES.md](STYLE_EXAMPLES.md).
 
 ## Development
 

@@ -1,5 +1,6 @@
 import { parseYamlFrontMatter } from "../utils/content.ts";
 import { resolvePrompt } from "../utils/prompt.ts";
+import { resolveStyleConfig } from "../utils/style.ts";
 import { buildRequestContext, buildFullPrompt, extractRequestParams } from "../utils/request.ts";
 import { generateStreamingResponse } from "../utils/ai.ts";
 import { DEFAULT_CONTENT, DEFAULT_SYSTEM_PROMPT, DEFAULT_MODEL } from "../utils/constants.ts";
@@ -47,6 +48,10 @@ export async function handleGenerate(req: Request, url: URL): Promise<Response> 
       userPrompt = "Generate an HTML page from this markdown content.";
     }
 
+    // Resolve style configuration from front matter
+    const styleConfig = frontMatter?.style 
+      ? await resolveStyleConfig(frontMatter.style)
+      : undefined;
     // Extract metadata from front matter
     const metadata = frontMatter ? {
       title: frontMatter.title,
@@ -60,7 +65,7 @@ export async function handleGenerate(req: Request, url: URL): Promise<Response> 
     const fullPrompt = buildFullPrompt(userPrompt, markdownContent, requestContext, metadata);
 
     // Generate and return streaming response
-    return await generateStreamingResponse(systemPrompt, fullPrompt, modelName);
+    return await generateStreamingResponse(systemPrompt, fullPrompt, modelName, styleConfig);
   } catch (error) {
     console.error("Error generating content:", error);
     return new Response(
