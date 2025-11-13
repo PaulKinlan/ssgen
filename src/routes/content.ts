@@ -63,6 +63,8 @@ export async function handleContent(req: Request, url: URL): Promise<Response | 
       if (!params.prompt && frontMatter && frontMatter.prompt) {
         userPrompt = await resolvePrompt(frontMatter.prompt);
       }
+
+      console.log(userPrompt, params.prompt, frontMatter?.prompt);
       
       // Use systemPrompt and model from query params/body if provided, otherwise use defaults
       const systemPrompt = params.systemPrompt || DEFAULT_SYSTEM_PROMPT;
