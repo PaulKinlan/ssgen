@@ -12,6 +12,7 @@ A flexible server-side generation service that runs on Deno Deploy. Generate dyn
 - 🌊 **Streaming Responses**: Real-time content generation
 - 🔍 **Context-Aware**: LLM has full access to HTTP headers and request variables
 - ⚡ **Fast & Flexible**: Easy to change prompts and source data
+- 💾 **Smart Caching**: Configurable caching to reduce API calls and improve performance
 
 ## Quick Start
 
@@ -331,6 +332,8 @@ deployctl deploy --project=your-project-name main.ts
 
 - `GOOGLE_GENERATIVE_AI_API_KEY` (required): Your Google AI API key
 - `PORT` (optional): Server port, defaults to 8000
+- `CACHE_ENABLED` (optional): Enable or disable content caching, defaults to `true`
+- `CACHE_TTL` (optional): Cache time-to-live in seconds, defaults to `3600` (1 hour)
 
 ### Changing the Model
 
@@ -353,6 +356,50 @@ const DEFAULT_MODEL = "gemini-2.5-flash"; // Change this to any supported model
 ```
 
 Thanks to the Vercel AI SDK, you can also easily switch to other providers (OpenAI, Anthropic, etc.) by changing the import and model initialization.
+
+### Content Caching
+
+To improve performance and reduce API costs, ssgen includes a built-in caching mechanism that stores generated content in memory.
+
+**How it works:**
+- When a request is made, the system generates a unique cache key based on the content, prompts, model, and other parameters
+- If cached content exists and hasn't expired, it's returned immediately (cache HIT)
+- Otherwise, new content is generated via the AI model and cached for future requests (cache MISS)
+- Responses include an `X-Cache: HIT` or `X-Cache: MISS` header to indicate cache status
+
+**Configuration:**
+
+```bash
+# Enable or disable caching (default: true)
+CACHE_ENABLED=true
+
+# Set cache TTL in seconds (default: 3600 = 1 hour)
+CACHE_TTL=3600
+```
+
+**Monitoring Cache Performance:**
+
+Check cache statistics via the health endpoint:
+
+```bash
+curl http://localhost:8000/health?stats
+```
+
+Response example:
+```json
+{
+  "hits": 150,
+  "misses": 25,
+  "size": 20,
+  "hitRate": "85.71%"
+}
+```
+
+**Cache Behavior:**
+- Cache is in-memory and resets when the server restarts
+- Expired entries are automatically cleaned up every 5 minutes
+- Each unique combination of content, prompts, and settings gets its own cache entry
+- Disable caching by setting `CACHE_ENABLED=false` for dynamic content scenarios
 
 ## Examples
 
