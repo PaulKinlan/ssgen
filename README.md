@@ -251,6 +251,9 @@ The rest of your content goes here...
     - `prompt: "custom-prompt.md"` (resolves to `prompts/custom-prompt.md`)
     - `prompt: "/custom-prompt.md"` (also resolves to `prompts/custom-prompt.md`)
     - `prompt: "subdir/file.md"` (resolves to `prompts/subdir/file.md`)
+- `cache` (optional): Configure caching behavior for this specific content:
+  - `enabled`: Enable or disable caching (boolean)
+  - `ttl`: Cache time-to-live in seconds (number)
 
 **Examples:**
 
@@ -267,6 +270,9 @@ Or place a file with metadata in the `content/` directory:
 ---
 title: "Welcome to My Site"
 description: "Learn about our services and offerings"
+cache:
+  enabled: true
+  ttl: 7200  # Cache for 2 hours
 ---
 
 # My Content
@@ -274,6 +280,34 @@ description: "Learn about our services and offerings"
 ```
 
 Then access it at `/my-page` or `/my-page.html`.
+
+**Cache Configuration Example:**
+
+You can disable caching for specific content or set a custom TTL:
+
+```markdown
+---
+title: "Real-time Dashboard"
+cache:
+  enabled: false  # Disable caching for this page
+---
+
+# Live Data
+This page shows real-time information...
+```
+
+Or set a longer cache duration for static content:
+
+```markdown
+---
+title: "Company History"
+cache:
+  ttl: 86400  # Cache for 24 hours
+---
+
+# Our Story
+Founded in 1990...
+```
 
 ## API Reference
 
@@ -366,8 +400,11 @@ To improve performance and reduce API costs, ssgen includes a built-in caching m
 - If cached content exists and hasn't expired, it's returned immediately (cache HIT)
 - Otherwise, new content is generated via the AI model and cached for future requests (cache MISS)
 - Responses include an `X-Cache: HIT` or `X-Cache: MISS` header to indicate cache status
+- Proper `Cache-Control` headers are set based on the TTL configuration (e.g., `Cache-Control: public, max-age=3600`)
 
-**Configuration:**
+**Global Configuration:**
+
+Set default caching behavior via environment variables:
 
 ```bash
 # Enable or disable caching (default: true)
@@ -376,6 +413,26 @@ CACHE_ENABLED=true
 # Set cache TTL in seconds (default: 3600 = 1 hour)
 CACHE_TTL=3600
 ```
+
+**Per-Content Configuration:**
+
+Override caching behavior for specific content files using YAML front matter:
+
+```markdown
+---
+title: "My Page"
+cache:
+  enabled: true   # Enable/disable caching for this page
+  ttl: 7200       # Cache for 2 hours (overrides CACHE_TTL)
+---
+
+# Content here...
+```
+
+This allows you to:
+- Disable caching for dynamic/real-time content (`enabled: false`)
+- Set longer cache durations for static content (e.g., `ttl: 86400` for 24 hours)
+- Set shorter cache durations for frequently updated content (e.g., `ttl: 300` for 5 minutes)
 
 **Monitoring Cache Performance:**
 

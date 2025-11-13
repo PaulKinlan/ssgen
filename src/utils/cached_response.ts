@@ -2,6 +2,11 @@ import { globalCache, createCacheKey } from "./cache.ts";
 import { generateStreamingResponse } from "./ai.ts";
 import { ResolvedStyle } from "./style.ts";
 
+export interface CacheOptions {
+  enabled?: boolean;
+  ttl?: number;
+}
+
 /**
  * Generate a response with caching support
  * If cache is enabled and a cached version exists, return it immediately
@@ -12,18 +17,28 @@ export async function getCachedOrGenerateResponse(
   systemPrompt: string,
   fullPrompt: string,
   modelName: string,
-  styleConfig?: ResolvedStyle
+  styleConfig?: ResolvedStyle,
+  cacheOptions?: CacheOptions
 ): Promise<Response> {
-  // Try to get from cache
-  const cached = globalCache.get(cacheKey);
+  // Determine cache configuration
+  const cacheEnabled = cacheOptions?.enabled !== false; // Default to enabled unless explicitly disabled
+  const cacheTTL = cacheOptions?.ttl || globalCache.getConfig().ttl; // Get default TTL from cache config
+  
+  // Try to get from cache if enabled
+  const cached = cacheEnabled ? globalCache.get(cacheKey) : null;
   
   if (cached) {
     console.log("Cache HIT for key:", cacheKey.substring(0, 50) + "...");
-    // Return cached content as a regular response
+    
+    // Determine TTL for Cache-Control header
+    const ttl = cacheTTL;
+    
+    // Return cached content as a regular response with Cache-Control headers
     return new Response(cached, {
       headers: {
         "Content-Type": "text/html; charset=utf-8",
         "X-Cache": "HIT",
+        "Cache-Control": `public, max-age=${ttl}`,
       },
     });
   }
@@ -60,15 +75,21 @@ export async function getCachedOrGenerateResponse(
         offset += chunk.length;
       }
       
-      // Convert to string and cache
+      // Convert to string and cache if enabled
       const text = new TextDecoder().decode(combined);
-      globalCache.set(cacheKey, text);
+      if (cacheEnabled) {
+        globalCache.set(cacheKey, text);
+      }
       
-      // Return the content
+      // Determine TTL for Cache-Control header
+      const ttl = cacheTTL;
+      
+      // Return the content with Cache-Control headers
       return new Response(text, {
         headers: {
           "Content-Type": "text/html; charset=utf-8",
           "X-Cache": "MISS",
+          "Cache-Control": cacheEnabled ? `public, max-age=${ttl}` : "no-cache, no-store, must-revalidate",
         },
       });
     } catch (error) {

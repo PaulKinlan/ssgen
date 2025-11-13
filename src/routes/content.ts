@@ -99,8 +99,11 @@ export async function handleContent(req: Request, url: URL): Promise<Response | 
         frontMatter?.style
       );
 
+      // Extract cache configuration from front matter
+      const cacheOptions = frontMatter?.cache;
+
       // Generate and return cached or new response
-      return await getCachedOrGenerateResponse(cacheKey, systemPrompt, fullPrompt, modelName, styleConfig);
+      return await getCachedOrGenerateResponse(cacheKey, systemPrompt, fullPrompt, modelName, styleConfig, cacheOptions);
     } catch (error) {
       // If file not found, return null to fall through to 404
       if (error instanceof Deno.errors.NotFound) {

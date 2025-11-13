@@ -26,6 +26,13 @@ export class Cache {
   }
 
   /**
+   * Get the cache configuration
+   */
+  getConfig(): CacheConfig {
+    return this.config;
+  }
+
+  /**
    * Get a value from the cache
    */
   get(key: string): string | null {

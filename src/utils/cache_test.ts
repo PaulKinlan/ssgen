@@ -180,3 +180,12 @@ Deno.test("getCacheConfig - uses defaults when not set", () => {
     }
   }
 });
+
+Deno.test("Cache - getConfig returns configuration", () => {
+  const cache = new Cache({ enabled: true, ttl: 1800 });
+  
+  const config = cache.getConfig();
+  
+  assertEquals(config.enabled, true);
+  assertEquals(config.ttl, 1800);
+});

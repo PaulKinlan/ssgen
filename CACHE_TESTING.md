@@ -11,7 +11,7 @@ This document explains how to test and verify the caching functionality in ssgen
 
 ### 1. Check Cache Headers
 
-Make multiple requests to the same endpoint and observe the `X-Cache` header:
+Make multiple requests to the same endpoint and observe cache-related headers:
 
 ```bash
 # First request - should be a MISS (generates new content)
@@ -21,9 +21,10 @@ curl -I http://localhost:8000/about
 curl -I http://localhost:8000/about
 ```
 
-Look for the `X-Cache` header in the response:
+Look for these headers in the response:
 - `X-Cache: MISS` - Content was freshly generated
 - `X-Cache: HIT` - Content was served from cache
+- `Cache-Control: public, max-age=3600` - Browser/CDN caching directive with TTL in seconds
 
 ### 2. Monitor Cache Statistics
 
@@ -95,6 +96,65 @@ curl -I http://localhost:8000/about
 # Wait 11 seconds, then make another request (cache should expire)
 sleep 11
 curl -I http://localhost:8000/about
+```
+
+## Testing YAML-Based Cache Configuration
+
+You can configure caching per content file using YAML front matter:
+
+### Test with Disabled Cache
+
+Create a test file `content/no-cache-test.md`:
+
+```markdown
+---
+title: "No Cache Test"
+cache:
+  enabled: false
+---
+
+# This page should not be cached
+Current time will vary on each request.
+```
+
+Test it:
+
+```bash
+# Multiple requests should all be cache MISS
+curl -I http://localhost:8000/no-cache-test
+curl -I http://localhost:8000/no-cache-test
+
+# Check Cache-Control header - should be "no-cache, no-store, must-revalidate"
+```
+
+### Test with Custom TTL
+
+Create a test file `content/short-cache-test.md`:
+
+```markdown
+---
+title: "Short Cache Test"
+cache:
+  ttl: 30  # 30 seconds
+---
+
+# This page caches for only 30 seconds
+```
+
+Test it:
+
+```bash
+# First request - MISS
+curl -I http://localhost:8000/short-cache-test
+
+# Second request within 30 seconds - HIT
+curl -I http://localhost:8000/short-cache-test
+
+# Check Cache-Control header - should be "public, max-age=30"
+
+# Wait 31 seconds, then request again - MISS
+sleep 31
+curl -I http://localhost:8000/short-cache-test
 ```
 
 ## Testing Different Cache Keys

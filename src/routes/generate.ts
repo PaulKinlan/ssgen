@@ -75,8 +75,11 @@ export async function handleGenerate(req: Request, url: URL): Promise<Response> 
       frontMatter?.style
     );
 
+    // Extract cache configuration from front matter
+    const cacheOptions = frontMatter?.cache;
+
     // Generate and return cached or new response
-    return await getCachedOrGenerateResponse(cacheKey, systemPrompt, fullPrompt, modelName, styleConfig);
+    return await getCachedOrGenerateResponse(cacheKey, systemPrompt, fullPrompt, modelName, styleConfig, cacheOptions);
   } catch (error) {
     console.error("Error generating content:", error);
     return new Response(
