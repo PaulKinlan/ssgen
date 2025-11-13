@@ -232,7 +232,7 @@ You can include YAML front matter at the beginning of your markdown files to add
 ---
 title: "My Page Title"
 description: "A description for SEO and social sharing"
-prompt: "prompts/custom-prompt.md"
+prompt: "custom-prompt.md"
 ---
 
 # Your Markdown Content
@@ -246,7 +246,10 @@ The rest of your content goes here...
 - `description` (optional): Page description that will be included in a `<meta name="description">` tag
 - `prompt` (optional): Custom prompt for the AI. Can be either:
   - An inline string: `prompt: "Create a modern, minimalist design"`
-  - A file path: `prompt: "prompts/custom-prompt.md"` (must be in the `prompts/` directory)
+  - A file path relative to the `prompts/` directory:
+    - `prompt: "custom-prompt.md"` (resolves to `prompts/custom-prompt.md`)
+    - `prompt: "/custom-prompt.md"` (also resolves to `prompts/custom-prompt.md`)
+    - `prompt: "subdir/file.md"` (resolves to `prompts/subdir/file.md`)
 
 **Examples:**
 

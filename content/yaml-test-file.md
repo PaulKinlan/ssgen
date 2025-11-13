@@ -1,7 +1,7 @@
 ---
 title: "File-based Prompt Test Page"
 description: "A test page demonstrating file-based prompt references with proper SEO metadata."
-prompt: prompts/testprompt.md
+prompt: testprompt.md
 ---
 
 # Test Page with File-based Prompt
