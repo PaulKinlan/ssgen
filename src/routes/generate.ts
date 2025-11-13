@@ -2,8 +2,9 @@ import { parseYamlFrontMatter } from "../utils/content.ts";
 import { resolvePrompt } from "../utils/prompt.ts";
 import { resolveStyleConfig } from "../utils/style.ts";
 import { buildRequestContext, buildFullPrompt, extractRequestParams } from "../utils/request.ts";
-import { generateStreamingResponse } from "../utils/ai.ts";
 import { DEFAULT_CONTENT, DEFAULT_SYSTEM_PROMPT, DEFAULT_MODEL } from "../utils/constants.ts";
+import { createCacheKey } from "../utils/cache.ts";
+import { getCachedOrGenerateResponse } from "../utils/cached_response.ts";
 
 /**
  * Handle main generation endpoint (/ and /generate)
@@ -64,8 +65,18 @@ export async function handleGenerate(req: Request, url: URL): Promise<Response> 
     // Create the full prompt with context and metadata
     const fullPrompt = buildFullPrompt(userPrompt, markdownContent, requestContext, metadata);
 
-    // Generate and return streaming response
-    return await generateStreamingResponse(systemPrompt, fullPrompt, modelName, styleConfig);
+    // Create cache key
+    const cacheKey = createCacheKey(
+      "/generate",
+      markdownContent,
+      userPrompt,
+      systemPrompt,
+      modelName,
+      frontMatter?.style
+    );
+
+    // Generate and return cached or new response
+    return await getCachedOrGenerateResponse(cacheKey, systemPrompt, fullPrompt, modelName, styleConfig);
   } catch (error) {
     console.error("Error generating content:", error);
     return new Response(

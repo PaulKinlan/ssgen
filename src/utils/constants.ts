@@ -17,3 +17,7 @@ IMPORTANT: Output only raw HTML without any markdown code fences or backticks. D
 
 // Default model
 export const DEFAULT_MODEL = "gemini-2.5-flash";
+
+// Default cache settings
+export const DEFAULT_CACHE_ENABLED = true;
+export const DEFAULT_CACHE_TTL = 3600; // 1 hour in seconds

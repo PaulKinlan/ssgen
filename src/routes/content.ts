@@ -3,8 +3,9 @@ import { parseYamlFrontMatter } from "../utils/content.ts";
 import { resolvePrompt } from "../utils/prompt.ts";
 import { resolveStyleConfig } from "../utils/style.ts";
 import { buildRequestContext, buildFullPrompt, extractRequestParams } from "../utils/request.ts";
-import { generateStreamingResponse } from "../utils/ai.ts";
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_MODEL } from "../utils/constants.ts";
+import { createCacheKey } from "../utils/cache.ts";
+import { getCachedOrGenerateResponse } from "../utils/cached_response.ts";
 
 /**
  * Handle content directory file serving
@@ -88,8 +89,18 @@ export async function handleContent(req: Request, url: URL): Promise<Response | 
 
       console.log(`fullPrompt: ${fullPrompt}`);
 
-      // Generate and return streaming response
-      return await generateStreamingResponse(systemPrompt, fullPrompt, modelName, styleConfig);
+      // Create cache key
+      const cacheKey = createCacheKey(
+        pathname,
+        markdownContent,
+        userPrompt,
+        systemPrompt,
+        modelName,
+        frontMatter?.style
+      );
+
+      // Generate and return cached or new response
+      return await getCachedOrGenerateResponse(cacheKey, systemPrompt, fullPrompt, modelName, styleConfig);
     } catch (error) {
       // If file not found, return null to fall through to 404
       if (error instanceof Deno.errors.NotFound) {
