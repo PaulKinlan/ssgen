@@ -15,8 +15,9 @@ export async function resolvePrompt(prompt: string): Promise<string> {
       // Security check: ensure path is within allowed directories
       const cwd = Deno.cwd();
       const promptsDir = resolve(cwd, "./prompts");
+      const decalredPromptsDir = resolve(cwd, promptPath);
 
-      console.log(promptPath, promptsDir)
+      console.log(promptPath, promptsDir, decalredPromptsDir);
       
       if (!promptPath.startsWith(promptsDir + "/") && promptPath !== promptsDir) {
         console.error("Prompt file path outside of prompts directory:", prompt);
