@@ -113,13 +113,20 @@ async function resolveImageFile(imagePath: string): Promise<ImageContent | null>
     // Determine MIME type based on file extension
     const mimeType = getMimeType(imagePath);
     
-    // Encode to base64 efficiently by processing in chunks to avoid stack overflow
-    let base64Data = '';
+    // Encode to base64 efficiently by building binary string in chunks to avoid stack overflow
+    // We build the binary string first, then encode it all at once to produce valid base64
+    let binaryString = '';
     const chunkSize = 8192; // Process 8KB at a time
     for (let i = 0; i < imageData.length; i += chunkSize) {
-      const chunk = imageData.slice(i, i + chunkSize);
-      base64Data += btoa(String.fromCharCode(...chunk));
+      const chunk = imageData.slice(i, Math.min(i + chunkSize, imageData.length));
+      // Build binary string without spread operator to avoid stack overflow
+      for (let j = 0; j < chunk.length; j++) {
+        binaryString += String.fromCharCode(chunk[j]);
+      }
     }
+    
+    // Now encode the complete binary string to base64
+    const base64Data = btoa(binaryString);
     
     return {
       path: imagePath,
