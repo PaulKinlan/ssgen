@@ -366,8 +366,8 @@ deployctl deploy --project=your-project-name main.ts
 
 - `GOOGLE_GENERATIVE_AI_API_KEY` (required): Your Google AI API key
 - `PORT` (optional): Server port, defaults to 8000
-- `CACHE_ENABLED` (optional): Enable or disable content caching, defaults to `true`
-- `CACHE_TTL` (optional): Cache time-to-live in seconds, defaults to `3600` (1 hour)
+- `CACHE_ENABLED` (optional): Enable or disable Cache-Control headers, defaults to `true`
+- `CACHE_TTL` (optional): Cache-Control max-age in seconds, defaults to `3600` (1 hour)
 
 ### Changing the Model
 
@@ -391,32 +391,31 @@ const DEFAULT_MODEL = "gemini-2.5-flash"; // Change this to any supported model
 
 Thanks to the Vercel AI SDK, you can also easily switch to other providers (OpenAI, Anthropic, etc.) by changing the import and model initialization.
 
-### Content Caching
+### Cache-Control Headers
 
-To improve performance and reduce API costs, ssgen includes a built-in caching mechanism that stores generated content in memory.
+ssgen sets appropriate `Cache-Control` headers on all responses to enable browser and CDN caching of generated content.
 
 **How it works:**
-- When a request is made, the system generates a unique cache key based on the content, prompts, model, and other parameters
-- If cached content exists and hasn't expired, it's returned immediately (cache HIT)
-- Otherwise, new content is generated via the AI model and cached for future requests (cache MISS)
-- Responses include an `X-Cache: HIT` or `X-Cache: MISS` header to indicate cache status
-- Proper `Cache-Control` headers are set based on the TTL configuration (e.g., `Cache-Control: public, max-age=3600`)
+- All responses include a `Cache-Control` header based on your configuration
+- When caching is enabled, responses include `Cache-Control: public, max-age={ttl}`
+- When caching is disabled, responses include `Cache-Control: no-cache, no-store, must-revalidate`
+- This allows browsers and CDNs (like Cloudflare or Deno Deploy) to cache the generated HTML
 
 **Global Configuration:**
 
-Set default caching behavior via environment variables:
+Set default cache behavior via environment variables:
 
 ```bash
-# Enable or disable caching (default: true)
+# Enable or disable Cache-Control headers (default: true)
 CACHE_ENABLED=true
 
-# Set cache TTL in seconds (default: 3600 = 1 hour)
+# Set max-age in seconds (default: 3600 = 1 hour)
 CACHE_TTL=3600
 ```
 
 **Per-Content Configuration:**
 
-Override caching behavior for specific content files using YAML front matter:
+Override cache behavior for specific content files using YAML front matter:
 
 ```markdown
 ---
@@ -429,34 +428,18 @@ cache:
 # Content here...
 ```
 
-This allows you to:
-- Disable caching for dynamic/real-time content (`enabled: false`)
-- Set longer cache durations for static content (e.g., `ttl: 86400` for 24 hours)
-- Set shorter cache durations for frequently updated content (e.g., `ttl: 300` for 5 minutes)
+**Use cases:**
+- **Static content**: Set long cache times (e.g., `ttl: 86400` for 24 hours)
+- **Frequently updated content**: Set short cache times (e.g., `ttl: 300` for 5 minutes)
+- **Dynamic/real-time content**: Disable caching (`enabled: false`)
 
-**Monitoring Cache Performance:**
-
-Check cache statistics via the health endpoint:
+**Example:**
 
 ```bash
-curl http://localhost:8000/health?stats
+# Check the Cache-Control header
+curl -I http://localhost:8000/about
+# Response includes: Cache-Control: public, max-age=3600
 ```
-
-Response example:
-```json
-{
-  "hits": 150,
-  "misses": 25,
-  "size": 20,
-  "hitRate": "85.71%"
-}
-```
-
-**Cache Behavior:**
-- Cache is in-memory and resets when the server restarts
-- Expired entries are automatically cleaned up every 5 minutes
-- Each unique combination of content, prompts, and settings gets its own cache entry
-- Disable caching by setting `CACHE_ENABLED=false` for dynamic content scenarios
 
 ## Examples
 

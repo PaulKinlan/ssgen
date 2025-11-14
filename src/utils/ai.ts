@@ -1,6 +1,6 @@
 import { google } from "@ai-sdk/google";
 import { streamText } from "ai";
-import { createCodeFenceStripper, createStreamingHeaders } from "./streaming.ts";
+import { createCodeFenceStripper, createStreamingHeaders, CacheOptions } from "./streaming.ts";
 import { ResolvedStyle } from "./style.ts";
 
 /**
@@ -10,7 +10,8 @@ export async function generateStreamingResponse(
   systemPrompt: string,
   fullPrompt: string,
   modelName: string,
-  styleConfig?: ResolvedStyle
+  styleConfig?: ResolvedStyle,
+  cacheOptions?: CacheOptions
 ): Promise<Response> {
   // Initialize Gemini model
   const model = google(modelName, {
@@ -66,7 +67,7 @@ export async function generateStreamingResponse(
 
     // Return the streaming response with appropriate headers
     return new Response(transformedStream, {
-      headers: createStreamingHeaders(),
+      headers: createStreamingHeaders(cacheOptions),
     });
   }
 
@@ -88,6 +89,6 @@ export async function generateStreamingResponse(
 
   // Return the streaming response with appropriate headers
   return new Response(transformedStream, {
-    headers: createStreamingHeaders(),
+    headers: createStreamingHeaders(cacheOptions),
   });
 }

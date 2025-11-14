@@ -1,6 +1,6 @@
 ---
 title: "Cache Configuration Example"
-description: "Demonstrates per-content cache configuration"
+description: "Demonstrates Cache-Control header configuration"
 cache:
   enabled: true
   ttl: 7200  # Cache for 2 hours
@@ -8,7 +8,7 @@ cache:
 
 # Cache Configuration Example
 
-This page demonstrates how to configure caching using YAML front matter.
+This page demonstrates how to configure Cache-Control headers using YAML front matter.
 
 ## Configuration
 
@@ -26,11 +26,12 @@ cache:
   ttl: 7200
 ```
 
-This means:
-- Content will be cached for 2 hours after first generation
-- Subsequent requests within 2 hours will be served from cache
-- Response includes `Cache-Control: public, max-age=7200` header
-- After 2 hours, content will be regenerated on next request
+This means responses will include the header:
+```
+Cache-Control: public, max-age=7200
+```
+
+This allows browsers and CDNs to cache this page for 2 hours.
 
 ## Testing
 
@@ -41,5 +42,10 @@ curl -I http://localhost:8000/cache-example
 ```
 
 You should see:
-- `X-Cache: HIT` or `X-Cache: MISS`
 - `Cache-Control: public, max-age=7200`
+
+## Use Cases
+
+- **Static content**: Set long TTL (e.g., 86400 for 24 hours)
+- **Frequently updated**: Set short TTL (e.g., 300 for 5 minutes)
+- **Dynamic/real-time**: Set `enabled: false`
