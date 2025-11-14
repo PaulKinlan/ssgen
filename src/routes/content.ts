@@ -74,6 +74,19 @@ export async function handleContent(req: Request, url: URL): Promise<Response | 
       const styleConfig = frontMatter?.style 
         ? await resolveStyleConfig(frontMatter.style)
         : undefined;
+      
+      // Enhance user prompt if style configuration is present
+      if (styleConfig && (styleConfig.brandGuidelines.length > 0 || styleConfig.images.length > 0)) {
+        const styleReferences = [];
+        if (styleConfig.brandGuidelines.length > 0) {
+          styleReferences.push("the provided brand guidelines");
+        }
+        if (styleConfig.images.length > 0) {
+          styleReferences.push("the reference images");
+        }
+        userPrompt += ` Please reference ${styleReferences.join(" and ")} for styling and design direction.`;
+      }
+      
       // Extract metadata from front matter
       const metadata = frontMatter ? {
         title: frontMatter.title,
