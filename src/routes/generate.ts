@@ -64,8 +64,11 @@ export async function handleGenerate(req: Request, url: URL): Promise<Response> 
     // Create the full prompt with context and metadata
     const fullPrompt = buildFullPrompt(userPrompt, markdownContent, requestContext, metadata);
 
+    // Extract cache configuration from front matter
+    const cacheOptions = frontMatter?.cache;
+
     // Generate and return streaming response
-    return await generateStreamingResponse(systemPrompt, fullPrompt, modelName, styleConfig);
+    return await generateStreamingResponse(systemPrompt, fullPrompt, modelName, styleConfig, cacheOptions);
   } catch (error) {
     console.error("Error generating content:", error);
     return new Response(

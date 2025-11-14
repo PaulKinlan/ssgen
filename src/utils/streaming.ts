@@ -65,13 +65,40 @@ export function createCodeFenceStripper(): TransformStream<Uint8Array, Uint8Arra
   });
 }
 
+export interface CacheOptions {
+  enabled?: boolean;
+  ttl?: number;
+}
+
 /**
  * Create streaming response headers
+ * @param cacheOptions - Optional cache configuration from YAML front matter
  */
-export function createStreamingHeaders(): HeadersInit {
+export function createStreamingHeaders(cacheOptions?: CacheOptions): HeadersInit {
+  // Determine Cache-Control header value
+  let cacheControl: string;
+  
+  if (cacheOptions?.enabled === false) {
+    // Explicitly disabled in YAML
+    cacheControl = "no-cache, no-store, must-revalidate";
+  } else if (cacheOptions?.ttl !== undefined) {
+    // Custom TTL specified in YAML
+    cacheControl = `public, max-age=${cacheOptions.ttl}`;
+  } else {
+    // Default from environment or fallback
+    const defaultTTL = parseInt(Deno.env.get("CACHE_TTL") || "3600");
+    const cacheEnabled = Deno.env.get("CACHE_ENABLED") !== "false";
+    
+    if (cacheEnabled) {
+      cacheControl = `public, max-age=${defaultTTL}`;
+    } else {
+      cacheControl = "no-cache, no-store, must-revalidate";
+    }
+  }
+  
   return {
     "Content-Type": "text/html; charset=utf-8",
-    "Cache-Control": "no-cache",
+    "Cache-Control": cacheControl,
     "Connection": "keep-alive",
     "X-Content-Type-Options": "nosniff",
   };

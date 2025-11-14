@@ -5,11 +5,17 @@ export interface StyleConfig {
   image?: string;
 }
 
+export interface CacheConfig {
+  enabled?: boolean;
+  ttl?: number;
+}
+
 export interface YamlFrontMatter {
   prompt?: string;
   style?: StyleConfig | StyleConfig[];
   title?: string;
   description?: string;
+  cache?: CacheConfig;
   [key: string]: unknown;
 }
 

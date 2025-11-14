@@ -12,6 +12,7 @@ A flexible server-side generation service that runs on Deno Deploy. Generate dyn
 - 🌊 **Streaming Responses**: Real-time content generation
 - 🔍 **Context-Aware**: LLM has full access to HTTP headers and request variables
 - ⚡ **Fast & Flexible**: Easy to change prompts and source data
+- 💾 **Smart Caching**: Configurable caching to reduce API calls and improve performance
 
 ## Quick Start
 
@@ -250,6 +251,9 @@ The rest of your content goes here...
     - `prompt: "custom-prompt.md"` (resolves to `prompts/custom-prompt.md`)
     - `prompt: "/custom-prompt.md"` (also resolves to `prompts/custom-prompt.md`)
     - `prompt: "subdir/file.md"` (resolves to `prompts/subdir/file.md`)
+- `cache` (optional): Configure caching behavior for this specific content:
+  - `enabled`: Enable or disable caching (boolean)
+  - `ttl`: Cache time-to-live in seconds (number)
 
 **Examples:**
 
@@ -266,6 +270,9 @@ Or place a file with metadata in the `content/` directory:
 ---
 title: "Welcome to My Site"
 description: "Learn about our services and offerings"
+cache:
+  enabled: true
+  ttl: 7200  # Cache for 2 hours
 ---
 
 # My Content
@@ -273,6 +280,34 @@ description: "Learn about our services and offerings"
 ```
 
 Then access it at `/my-page` or `/my-page.html`.
+
+**Cache Configuration Example:**
+
+You can disable caching for specific content or set a custom TTL:
+
+```markdown
+---
+title: "Real-time Dashboard"
+cache:
+  enabled: false  # Disable caching for this page
+---
+
+# Live Data
+This page shows real-time information...
+```
+
+Or set a longer cache duration for static content:
+
+```markdown
+---
+title: "Company History"
+cache:
+  ttl: 86400  # Cache for 24 hours
+---
+
+# Our Story
+Founded in 1990...
+```
 
 ## API Reference
 
@@ -331,6 +366,8 @@ deployctl deploy --project=your-project-name main.ts
 
 - `GOOGLE_GENERATIVE_AI_API_KEY` (required): Your Google AI API key
 - `PORT` (optional): Server port, defaults to 8000
+- `CACHE_ENABLED` (optional): Enable or disable Cache-Control headers, defaults to `true`
+- `CACHE_TTL` (optional): Cache-Control max-age in seconds, defaults to `3600` (1 hour)
 
 ### Changing the Model
 
@@ -353,6 +390,56 @@ const DEFAULT_MODEL = "gemini-2.5-flash"; // Change this to any supported model
 ```
 
 Thanks to the Vercel AI SDK, you can also easily switch to other providers (OpenAI, Anthropic, etc.) by changing the import and model initialization.
+
+### Cache-Control Headers
+
+ssgen sets appropriate `Cache-Control` headers on all responses to enable browser and CDN caching of generated content.
+
+**How it works:**
+- All responses include a `Cache-Control` header based on your configuration
+- When caching is enabled, responses include `Cache-Control: public, max-age={ttl}`
+- When caching is disabled, responses include `Cache-Control: no-cache, no-store, must-revalidate`
+- This allows browsers and CDNs (like Cloudflare or Deno Deploy) to cache the generated HTML
+
+**Global Configuration:**
+
+Set default cache behavior via environment variables:
+
+```bash
+# Enable or disable Cache-Control headers (default: true)
+CACHE_ENABLED=true
+
+# Set max-age in seconds (default: 3600 = 1 hour)
+CACHE_TTL=3600
+```
+
+**Per-Content Configuration:**
+
+Override cache behavior for specific content files using YAML front matter:
+
+```markdown
+---
+title: "My Page"
+cache:
+  enabled: true   # Enable/disable caching for this page
+  ttl: 7200       # Cache for 2 hours (overrides CACHE_TTL)
+---
+
+# Content here...
+```
+
+**Use cases:**
+- **Static content**: Set long cache times (e.g., `ttl: 86400` for 24 hours)
+- **Frequently updated content**: Set short cache times (e.g., `ttl: 300` for 5 minutes)
+- **Dynamic/real-time content**: Disable caching (`enabled: false`)
+
+**Example:**
+
+```bash
+# Check the Cache-Control header
+curl -I http://localhost:8000/about
+# Response includes: Cache-Control: public, max-age=3600
+```
 
 ## Examples
 

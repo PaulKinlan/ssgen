@@ -88,8 +88,11 @@ export async function handleContent(req: Request, url: URL): Promise<Response | 
 
       console.log(`fullPrompt: ${fullPrompt}`);
 
+      // Extract cache configuration from front matter
+      const cacheOptions = frontMatter?.cache;
+
       // Generate and return streaming response
-      return await generateStreamingResponse(systemPrompt, fullPrompt, modelName, styleConfig);
+      return await generateStreamingResponse(systemPrompt, fullPrompt, modelName, styleConfig, cacheOptions);
     } catch (error) {
       // If file not found, return null to fall through to 404
       if (error instanceof Deno.errors.NotFound) {
