@@ -1,6 +1,6 @@
 ---
 style:
-  image: images/modern-style.png
+  image: images/screen.png
 ---
 
 # Portfolio Showcase
@@ -12,12 +12,15 @@ Explore a collection of my recent projects and designs.
 ## Featured Projects
 
 ### Project Alpha
+
 A revolutionary web application that changed the industry.
 
 ### Project Beta
+
 Beautiful design meets functionality in this mobile app.
 
 ### Project Gamma
+
 Enterprise solution delivering results at scale.
 
 ## About Me
