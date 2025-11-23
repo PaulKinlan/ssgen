@@ -4,9 +4,9 @@ prompt: element.md
 
 This is a test page testing how elements being automatically generated.
 
-# Google Map and Pin
+# Open Street Map and Pin
 
-<google-map><pin-location city="Ruthin"/></google-map>
+<open-street-map><pin-location city="Ruthin"/></open-street-map>
 
 # Google Font
 
