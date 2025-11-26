@@ -1,5 +1,5 @@
 import { google } from "@ai-sdk/google";
-import { streamText, streamObject } from "ai";
+import { streamText, streamObject, generateText } from "ai";
 import { createCodeFenceStripper, createStreamingHeaders, CacheOptions } from "./streaming.ts";
 import { ResolvedStyle } from "./style.ts";
 import { z } from "zod";
@@ -102,39 +102,35 @@ export async function generateImageResponse(
     fullPrompt: string,
     modelName: string,
   ): Promise<Response> {
-    const apiKey = Deno.env.get("GOOGLE_GENERATIVE_AI_API_KEY");
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+    const model = google(modelName);
+    console.log('[Image Generation] Model:', model);
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: fullPrompt
-          }]
-        }]
-      }),
+    const result = await generateText({
+      model,
+      prompt: ' Return only the image.\n ' + fullPrompt + ' Return an image that would match the intent even if not feasible.',
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    //console.log('[Image Generation] Full result:', JSON.stringify(result, null, 2));
+    // console.log('[Image Generation] result.files:', result.files);
+    // console.log('[Image Generation] result.text:', result.text);
+
+    // Find the first image file in the response
+    const imageFile = result.files?.find((file: any) => file.mediaType.startsWith('image/'));
+    
+    if (!imageFile) {
+      console.error('[Image Generation] No image file found in result.files');
+      throw new Error("No image was generated");
     }
 
-    const data = await response.json();
+    // console.log('Generated image:', imageFile);
 
-    if (!data.candidates?.length || !data.candidates[0].content?.parts?.length || !data.candidates[0].content.parts[0].inlineData?.data) {
-      throw new Error("Invalid response from image generation API");
-    }
-
-    const imageBase64 = data.candidates[0].content.parts[0].inlineData.data;
-    const imageBytes = Uint8Array.from(atob(imageBase64), c => c.charCodeAt(0));
+    // Decode the base64 image data
+   const base64Data = imageFile.base64Data // Remove data:image/png;base64, prefix
+    const imageBytes =  Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
 
     return new Response(imageBytes, {
       headers: {
-        "Content-Type": "image/png"
+        "Content-Type": imageFile.mediaType || "image/png"
       },
     });
   }

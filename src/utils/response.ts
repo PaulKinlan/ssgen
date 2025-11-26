@@ -9,7 +9,7 @@ import {
   generateJsonResponse,
 } from "./ai.ts";
 import { buildFullPrompt, buildRequestContext } from "./request.ts";
-import { accepts, parseAcceptLanguage } from "@std/http/negotiation";
+import { accepts, acceptsLanguages } from "@std/http/negotiation";
 
 /**
  * Generates a response based on the request's Accept header.
@@ -41,8 +41,10 @@ export async function generateResponse(
 ): Promise < Response > {
   const acceptHeader = req.headers.get("Accept") || "text/html";
 
+  console.log("[Content Negotiation] Accept header:", acceptHeader);
+
   // Get the preferred language from the Accept-Language header.
-  const languages = parseAcceptLanguage(req.headers.get("Accept-Language") || "");
+  const languages = acceptsLanguages(req);
   const preferredLanguage = languages && languages.length > 0 ? languages[0] : "en-US";
 
   const fullPrompt = buildFullPrompt(
@@ -53,30 +55,44 @@ export async function generateResponse(
     preferredLanguage,
   );
 
-  const contentType = accepts(req, {
-    header: "Accept",
-    supports: [
-      "text/html",
-      "image/*",
-      "video/*",
-      "application/json",
-    ],
-    default: "text/html",
-  });
+  // Manual content negotiation since accepts() doesn't support wildcards as patterns
+  let contentType: string;
+  
+  // Check if Accept header includes image types
+  if (acceptHeader.includes("image/")) {
+    contentType = "image/*";
+  }
+  // Check if Accept header includes video types
+  else if (acceptHeader.includes("video/")) {
+    contentType = "video/*";
+  }
+  // Check for JSON
+  else if (acceptHeader.includes("application/json")) {
+    contentType = "application/json";
+  }
+  // Default to HTML
+  else {
+    contentType = "text/html";
+  }
+
+  console.log("[Content Negotiation] Negotiated content type:", contentType);
 
   let selectedModel = modelName;
   if (!modelName) {
     if (contentType === "image/*") {
-      selectedModel = "gemini-2.5-flash-image";
+      selectedModel = "gemini-3-pro-image-preview";
     } else if (contentType === "text/html" || contentType === "application/json") {
-      selectedModel = "gemini-1.5-flash";
+      selectedModel = "gemini-2.5-flash";
     } else if (contentType === "video/*") {
-      selectedModel = "veo-3.1-generate-preview";
+      selectedModel = "veo-3.1-fast-generate-preview";
     }
   }
 
+  console.log("[Model Selection] Selected model:", selectedModel, "for content type:", contentType);
+
 
   if (contentType === "image/*") {
+    console.log("[Response Type] Generating image response");
     return generateImageResponse(
       systemPrompt,
       fullPrompt,
@@ -85,6 +101,7 @@ export async function generateResponse(
   }
 
   if (contentType === "video/*") {
+    console.log("[Response Type] Generating video response");
     return generateVideoResponse(
       systemPrompt,
       fullPrompt,
@@ -93,6 +110,7 @@ export async function generateResponse(
   }
 
   if (contentType === "application/json") {
+    console.log("[Response Type] Generating JSON response");
     return generateJsonResponse(
         systemPrompt,
         fullPrompt,
@@ -100,6 +118,7 @@ export async function generateResponse(
         );
   }
 
+  console.log("[Response Type] Generating HTML streaming response");
   return generateStreamingResponse(
     systemPrompt,
     fullPrompt,

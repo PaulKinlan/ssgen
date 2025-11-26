@@ -36,7 +36,8 @@ export async function handleGenerate(req: Request, url: URL): Promise<Response> 
     const rawMarkdownContent = params.content || DEFAULT_CONTENT;
     const systemPrompt = params.systemPrompt || DEFAULT_SYSTEM_PROMPT;
     let userPrompt = params.prompt || "";
-    const modelName = params.model || DEFAULT_MODEL;
+    // Only use model from params if explicitly provided, otherwise let generateResponse choose based on content type
+    const modelName = params.model || "";
 
     // Parse YAML front matter from markdown content
     const { frontMatter, content: markdownContent } = parseYamlFrontMatter(rawMarkdownContent);

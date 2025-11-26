@@ -51,7 +51,7 @@ Deno.test("generateResponse should return JSON when Accept header is application
       "markdown",
       { headers: new Headers() },
       {},
-      "gemini-1.5-flash",
+      "gemini-2.5-flash",
     );
     assertEquals(response.headers.get("Content-Type"), "application/json");
   } finally {
@@ -109,7 +109,7 @@ Deno.test("generateResponse should return an image when Accept header is image/*
         "markdown",
         { headers: new Headers() },
         {},
-        "gemini-1.5-flash",
+        "gemini-2.5-flash",
       );
       assertEquals(response.headers.get("Content-Type"), "video/mp4");
     } finally {

@@ -68,7 +68,8 @@ export async function handleContent(req: Request, url: URL): Promise<Response | 
       
       // Use systemPrompt and model from query params/body if provided, otherwise use defaults
       const systemPrompt = params.systemPrompt || DEFAULT_SYSTEM_PROMPT;
-      const modelName = params.model || DEFAULT_MODEL;
+      // Only use model from params if explicitly provided, otherwise let generateResponse choose based on content type
+      const modelName = params.model || "";
       
       // Resolve style configuration from front matter
       const styleConfig = frontMatter?.style 

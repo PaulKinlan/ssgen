@@ -9,6 +9,7 @@
     "@std/path": "jsr:@std/path@^1.0.8",
     "@std/yaml": "jsr:@std/yaml@^1.0.5",
     "@std/http": "jsr:@std/http@^1.0.0",
+    "@std/http/negotiation": "jsr:@std/http@^1.0.0/negotiation",
     "zod": "npm:zod@^3.22.4"
   },
   "compilerOptions": {

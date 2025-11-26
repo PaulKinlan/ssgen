@@ -16,4 +16,4 @@ Make the output visually appealing and professional.
 IMPORTANT: Output only raw HTML without any markdown code fences or backticks. Do not wrap the HTML in \`\`\`html or any other code fence markers.`;
 
 // Default model
-export const DEFAULT_MODEL = "gemini-1.5-flash";
+export const DEFAULT_MODEL = "gemini-2.5-flash";
