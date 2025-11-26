@@ -1,8 +1,8 @@
 import { parseYamlFrontMatter } from "../utils/content.ts";
 import { resolvePrompt } from "../utils/prompt.ts";
 import { resolveStyleConfig } from "../utils/style.ts";
-import { buildRequestContext, buildFullPrompt, extractRequestParams } from "../utils/request.ts";
-import { generateStreamingResponse } from "../utils/ai.ts";
+import { buildRequestContext, extractRequestParams } from "../utils/request.ts";
+import { generateResponse } from "../utils/response.ts";
 import { DEFAULT_CONTENT, DEFAULT_SYSTEM_PROMPT, DEFAULT_MODEL } from "../utils/constants.ts";
 
 /**
@@ -61,14 +61,21 @@ export async function handleGenerate(req: Request, url: URL): Promise<Response> 
     // Build request context with headers and other variables
     const requestContext = buildRequestContext(req);
 
-    // Create the full prompt with context and metadata
-    const fullPrompt = buildFullPrompt(userPrompt, markdownContent, requestContext, metadata);
-
     // Extract cache configuration from front matter
     const cacheOptions = frontMatter?.cache;
 
-    // Generate and return streaming response
-    return await generateStreamingResponse(systemPrompt, fullPrompt, modelName, styleConfig, cacheOptions);
+    // Generate and return response
+    return await generateResponse(
+      req,
+      systemPrompt,
+      userPrompt,
+      markdownContent,
+      requestContext,
+      metadata,
+      modelName,
+      styleConfig,
+      cacheOptions
+    );
   } catch (error) {
     console.error("Error generating content:", error);
     return new Response(
