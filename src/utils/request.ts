@@ -38,11 +38,11 @@ export function buildFullPrompt(
   userPrompt: string,
   markdownContent: string,
   requestContext: RequestContext,
-  metadata?: Metadata
+  metadata: Metadata = {},
+  preferredLanguage ? : string,
 ): string {
   let metadataInstructions = "";
-  
-  if (metadata && (metadata.title || metadata.description)) {
+  if (metadata.title || metadata.description) {
     metadataInstructions = "\n**Metadata to include in HTML:**\n";
     if (metadata.title) {
       metadataInstructions += `- Title: ${metadata.title} (add this to the <title> tag)\n`;
@@ -59,6 +59,7 @@ ${metadataInstructions}
 - URL: ${requestContext.url}
 - User-Agent: ${requestContext.userAgent || "N/A"}
 - IP: ${requestContext.ip || "N/A"}
+- Preferred Language: ${preferredLanguage || "N/A"}
 
 **Available Headers:**
 ${Object.entries(requestContext.headers)
