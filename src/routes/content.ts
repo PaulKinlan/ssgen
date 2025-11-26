@@ -2,8 +2,8 @@ import { resolve, normalize } from "@std/path";
 import { parseYamlFrontMatter } from "../utils/content.ts";
 import { resolvePrompt } from "../utils/prompt.ts";
 import { resolveStyleConfig } from "../utils/style.ts";
-import { buildRequestContext, buildFullPrompt, extractRequestParams } from "../utils/request.ts";
-import { generateStreamingResponse } from "../utils/ai.ts";
+import { buildRequestContext, extractRequestParams } from "../utils/request.ts";
+import { generateResponse } from "../utils/response.ts";
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_MODEL } from "../utils/constants.ts";
 
 /**
@@ -91,21 +91,26 @@ export async function handleContent(req: Request, url: URL): Promise<Response | 
       const metadata = frontMatter ? {
         title: frontMatter.title,
         description: frontMatter.description,
-      } : undefined;
+      } : {};
       
       // Build request context with headers and other variables
       const requestContext = buildRequestContext(req);
-
-      // Create the full prompt with context and metadata
-      const fullPrompt = buildFullPrompt(userPrompt, markdownContent, requestContext, metadata);
-
-      console.log(`fullPrompt: ${fullPrompt}`);
 
       // Extract cache configuration from front matter
       const cacheOptions = frontMatter?.cache;
 
       // Generate and return streaming response
-      return await generateStreamingResponse(systemPrompt, fullPrompt, modelName, styleConfig, cacheOptions);
+      return await generateResponse(
+        req,
+        systemPrompt,
+        userPrompt,
+        markdownContent,
+        requestContext,
+        metadata,
+        modelName,
+        styleConfig,
+        cacheOptions
+      );
     } catch (error) {
       // If file not found, return null to fall through to 404
       if (error instanceof Deno.errors.NotFound) {
