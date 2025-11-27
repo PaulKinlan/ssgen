@@ -4,6 +4,30 @@
  */
 
 /**
+ * Constant-time string comparison to prevent timing attacks.
+ * @param a First string to compare
+ * @param b Second string to compare
+ * @returns true if strings are equal, false otherwise
+ */
+function constantTimeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) {
+    // To avoid leaking length information, we still compare against b
+    // with a dummy string of the same length, then return false
+    let result = 0;
+    for (let i = 0; i < b.length; i++) {
+      result |= b.charCodeAt(i) ^ b.charCodeAt(i);
+    }
+    return false;
+  }
+  
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+}
+
+/**
  * Validates the media password from the request's Authorization header.
  * Supports Bearer token authentication.
  * 
@@ -13,7 +37,8 @@
 export function validateMediaPassword(req: Request): boolean {
   const mediaPassword = Deno.env.get("MEDIA_PASSWORD");
   
-  // If no password is configured, allow all requests (backwards compatible)
+  // If no password is configured or explicitly empty, allow all requests (backwards compatible)
+  // Note: Setting MEDIA_PASSWORD="" explicitly means "no protection"
   if (!mediaPassword) {
     return true;
   }
@@ -27,7 +52,7 @@ export function validateMediaPassword(req: Request): boolean {
   // Support Bearer token authentication
   if (authHeader.startsWith("Bearer ")) {
     const token = authHeader.slice(7);
-    return token === mediaPassword;
+    return constantTimeEqual(token, mediaPassword);
   }
   
   return false;
