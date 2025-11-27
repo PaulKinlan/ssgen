@@ -12,6 +12,18 @@ Deno.test("buildRequestContext extracts Accept-Prompt header", () => {
   assertEquals(context.userPromptPreference, "I am a person who likes kittens. Please make sure the output has a kitten influence.");
 });
 
+Deno.test("buildRequestContext extracts Accept-Prompt header (case-insensitive)", () => {
+  // HTTP headers are case-insensitive per RFC 7230
+  const req = new Request("http://localhost:8000/", {
+    headers: {
+      "accept-prompt": "lowercase header value",
+    },
+  });
+
+  const context = buildRequestContext(req);
+  assertEquals(context.userPromptPreference, "lowercase header value");
+});
+
 Deno.test("buildRequestContext returns undefined when Accept-Prompt header is not present", () => {
   const req = new Request("http://localhost:8000/", {
     headers: {},
@@ -21,9 +33,9 @@ Deno.test("buildRequestContext returns undefined when Accept-Prompt header is no
   assertEquals(context.userPromptPreference, undefined);
 });
 
-Deno.test("buildFullPrompt includes user preference when Accept-Prompt is provided", () => {
+Deno.test("buildFullPrompt includes user preference when userPromptPreference is provided", () => {
   const requestContext = {
-    headers: { "accept-prompt": "I like kittens" },
+    headers: { "Accept-Prompt": "I like kittens" },
     method: "GET",
     url: "http://localhost:8000/",
     userAgent: "TestAgent",
@@ -44,7 +56,7 @@ Deno.test("buildFullPrompt includes user preference when Accept-Prompt is provid
   assertEquals(result.includes("Please take this into account"), true);
 });
 
-Deno.test("buildFullPrompt does not include user preference section when Accept-Prompt is not provided", () => {
+Deno.test("buildFullPrompt does not include user preference section when userPromptPreference is not provided", () => {
   const requestContext = {
     headers: {},
     method: "GET",
