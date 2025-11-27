@@ -16,7 +16,7 @@ export async function generateStreamingResponse(
 ): Promise<Response> {
   // Initialize Gemini model
   const model = google(modelName, {
-    apiKey: Deno.env.get("GOOGLE_GENERATIVE_AI_API_KEY")
+    apiKey: Deno.env.get("GOOGLE_GENERATIVE_AI_API_KEY") || Deno.env.get("GEMINI_API_KEY")
   });
 
   // Enhance system prompt with brand guidelines if provided
@@ -147,7 +147,7 @@ export async function generateImageResponse(
     // the Deno event loop. In a production environment, this should be replaced
     // with a more robust asynchronous solution, such as a webhook or a separate
     // worker process to handle the polling.
-    const apiKey = Deno.env.get("GOOGLE_GENERATIVE_AI_API_KEY");
+    const apiKey = Deno.env.get("GOOGLE_GENERATIVE_AI_API_KEY") || Deno.env.get("GEMINI_API_KEY");
     const baseUrl = "https://generativelanguage.googleapis.com/v1beta";
     const url = `${baseUrl}/models/${modelName}:predictLongRunning?key=${apiKey}`;
 
@@ -211,7 +211,7 @@ export async function generateJsonResponse(
     modelName: string,
   ): Promise<Response> {
     const model = google(modelName, {
-      apiKey: Deno.env.get("GOOGLE_GENERATIVE_AI_API_KEY")
+      apiKey: Deno.env.get("GOOGLE_GENERATIVE_AI_API_KEY") || Deno.env.get("GEMINI_API_KEY")
     });
 
     const result = await streamObject({
