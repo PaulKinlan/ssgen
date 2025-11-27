@@ -225,6 +225,18 @@ The LLM automatically receives information about the request:
 
 This allows the AI to generate personalized content based on the request context.
 
+### User Prompt Preference (Accept-Prompt Header)
+
+Users can influence the generated output by providing a custom preference via the `Accept-Prompt` HTTP header. This allows for personalized content generation without modifying the system or author prompts.
+
+**Example:**
+```bash
+curl -H "Accept-Prompt: I am a person who likes kittens. Please make sure the output has a kitten influence." \
+     http://localhost:8000/
+```
+
+The user preference is included in the prompt to the LLM as additional guidance, while still respecting the system and author instructions. This enables completely personalized versions of pages based on user preferences.
+
 ### YAML Front Matter
 
 You can include YAML front matter at the beginning of your markdown files to add metadata and customize behavior:

@@ -4,6 +4,7 @@ export interface RequestContext {
   url: string;
   userAgent?: string;
   ip?: string;
+  userPromptPreference?: string;
 }
 
 export interface RequestBody {
@@ -23,6 +24,7 @@ export function buildRequestContext(req: Request): RequestContext {
     url: req.url,
     userAgent: req.headers.get("user-agent") || undefined,
     ip: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || undefined,
+    userPromptPreference: req.headers.get("accept-prompt") || undefined,
   };
 }
 
@@ -52,8 +54,16 @@ export function buildFullPrompt(
     }
   }
 
+  let userPreferenceInstructions = "";
+  if (requestContext.userPromptPreference) {
+    userPreferenceInstructions = `\n**User Preference:**
+The user has provided the following preference to influence the output. Please take this into account when generating the response while still following the system and author instructions:
+${requestContext.userPromptPreference}
+`;
+  }
+
   return `${userPrompt}
-${metadataInstructions}
+${metadataInstructions}${userPreferenceInstructions}
 **Request Context:**
 - Method: ${requestContext.method}
 - URL: ${requestContext.url}
