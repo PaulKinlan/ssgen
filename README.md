@@ -380,6 +380,7 @@ deployctl deploy --project=your-project-name main.ts
 - `PORT` (optional): Server port, defaults to 8000
 - `CACHE_ENABLED` (optional): Enable or disable Cache-Control headers, defaults to `true`
 - `CACHE_TTL` (optional): Cache-Control max-age in seconds, defaults to `3600` (1 hour)
+- `MEDIA_PASSWORD` (optional): Password to protect image and video generation endpoints. When set, requests for media generation must include a valid `Authorization: Bearer <password>` header. If not set, media generation is open to all requests.
 
 ### Changing the Model
 
