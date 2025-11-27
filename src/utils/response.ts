@@ -10,6 +10,7 @@ import {
 } from "./ai.ts";
 import { buildFullPrompt, buildRequestContext } from "./request.ts";
 import { accepts, acceptsLanguages } from "@std/http/negotiation";
+import { validateMediaPassword, createUnauthorizedResponse } from "./auth.ts";
 
 /**
  * Generates a response based on the request's Accept header.
@@ -92,6 +93,11 @@ export async function generateResponse(
 
 
   if (contentType === "image/*") {
+    // Validate password for expensive image generation
+    if (!validateMediaPassword(req)) {
+      console.log("[Auth] Unauthorized request for image generation");
+      return createUnauthorizedResponse();
+    }
     console.log("[Response Type] Generating image response");
     return generateImageResponse(
       systemPrompt,
@@ -101,6 +107,11 @@ export async function generateResponse(
   }
 
   if (contentType === "video/*") {
+    // Validate password for expensive video generation
+    if (!validateMediaPassword(req)) {
+      console.log("[Auth] Unauthorized request for video generation");
+      return createUnauthorizedResponse();
+    }
     console.log("[Response Type] Generating video response");
     return generateVideoResponse(
       systemPrompt,
