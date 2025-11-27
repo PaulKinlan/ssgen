@@ -67,7 +67,7 @@ export function createUnauthorizedResponse(): Response {
   return new Response(
     JSON.stringify({
       error: "Unauthorized",
-      message: "Authentication required for media generation. Please provide a valid Bearer token in the Authorization header.",
+      message: "Authentication required for media generation. Please provide a valid Bearer token in the Authorization header. Email paul@aifoc.us for the password.",
     }),
     {
       status: 401,
