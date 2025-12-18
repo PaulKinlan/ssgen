@@ -56,25 +56,9 @@ export async function generateResponse(
     preferredLanguage,
   );
 
-  // Manual content negotiation since accepts() doesn't support wildcards as patterns
-  let contentType: string;
-  
-  // Check if Accept header includes image types
-  if (acceptHeader.includes("image/")) {
-    contentType = "image/*";
-  }
-  // Check if Accept header includes video types
-  else if (acceptHeader.includes("video/")) {
-    contentType = "video/*";
-  }
-  // Check for JSON
-  else if (acceptHeader.includes("application/json")) {
-    contentType = "application/json";
-  }
-  // Default to HTML
-  else {
-    contentType = "text/html";
-  }
+  // Use proper content negotiation with accepts() function
+  // The order matters: we check HTML first since that's the primary use case
+  const contentType = accepts(req, "text/html", "application/json", "image/*", "video/*") || "text/html";
 
   console.log("[Content Negotiation] Negotiated content type:", contentType);
 
